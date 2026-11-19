@@ -41,8 +41,8 @@ public final class SettingsActivity extends Activity {
         content.setPadding(MainActivity.dp(this,20),MainActivity.dp(this,24),
             MainActivity.dp(this,20),MainActivity.dp(this,28));
         scroll.addView(content);
-        MainActivity.add(content,label("HORLOGE NEON",26,MainActivity.WHITE,true),this,0);
-        MainActivity.add(content,label("La roue affiche 0 à 6 : chaque intervalle correspond à 10 secondes.",
+        MainActivity.add(content,label("PERSONNALISATION NEON",26,MainActivity.WHITE,true),this,0);
+        MainActivity.add(content,label("Cadran de coffre-fort : roue de 0 à 6, 60 secondes par tour. Flèche orange fixe, heure au centre.",
             14,MainActivity.MUTED,false),this,6);
         preview=new MainActivity.ClockView(this,true);
         LinearLayout.LayoutParams previewLp=new LinearLayout.LayoutParams(-1,MainActivity.dp(this,325));
@@ -50,15 +50,15 @@ public final class SettingsActivity extends Activity {
         content.addView(preview,previewLp);
 
         section("AFFICHAGE");
-        toggle("Afficher le titre NEON CLOCK",LockPrefs.SHOW_TITLE,
+        toggle("Afficher « NEON LOCK »",LockPrefs.SHOW_TITLE,
             LockPrefs.get(this).showTitle);
         toggle("Afficher la date",LockPrefs.SHOW_DATE,
             LockPrefs.get(this).showDate);
         section("COULEURS");
         chooseColor("Couleur du titre",LockPrefs.TITLE_COLOR);
         chooseColor("Couleur de la date",LockPrefs.DATE_COLOR);
-        chooseColor("Couleur de l'arc et du repère",LockPrefs.RING_COLOR);
-        chooseColor("Couleur des graduations",LockPrefs.NUMBER_COLOR);
+        chooseColor("Couleur des arcs et du repère",LockPrefs.RING_COLOR);
+        chooseColor("Couleur des chiffres et graduations",LockPrefs.NUMBER_COLOR);
         chooseColor("Couleur de l'heure",LockPrefs.CLOCK_COLOR);
         section("POSITION SUR L'ÉCRAN");
         positionText=label("",15,MainActivity.WHITE,true);
