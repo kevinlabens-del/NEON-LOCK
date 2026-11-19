@@ -2,10 +2,8 @@ package com.creatix.neonlock;
 
 import android.accessibilityservice.AccessibilityService;
 import android.app.KeyguardManager;
-import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.GradientDrawable;
@@ -50,14 +48,13 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         if(service!=null)service.handler.post(service::safelyShowDialOnUserGesture);
     }
 
-    // Exposé uniquement à l'application : indique l'état réel de la connexion
-    // Android, et non la simple présence de l'interrupteur d'accessibilité.
-    private static volatile String lastIssue = "";
-    public static boolean isConnected() {
+    // Réglages : état de connexion réel, indépendant du simple interrupteur Android.
+    private static volatile String lastIssue="";
+    public static boolean isConnected(){
         NeonLockAccessibilityService service=activeInstance.get();
         return service!=null && service.active;
     }
-    public static String getLastIssue() { return lastIssue; }
+    public static String getLastIssue(){ return lastIssue; }
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private WindowManager manager;
@@ -67,17 +64,6 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     private MainActivity.Wheel wheel;
     private final StringBuilder input = new StringBuilder();
     private boolean active=false,hiddenForWake=false,busy=false;
-    private boolean receiverRegistered=false;
-    private final BroadcastReceiver screenEvents=new BroadcastReceiver(){
-        @Override public void onReceive(Context context,Intent intent){
-            if(Intent.ACTION_SCREEN_OFF.equals(intent.getAction())){
-                // L'état PowerManager.isInteractive() ne suit pas toujours
-                // l'Always-On Display. Un vrai SCREEN_OFF doit réarmer NEON.
-                hiddenForWake=false;
-                hideOverlay();
-            }
-        }
-    };
     private int failures=0,mode=0; // 0 absent, 1 gesture handle, 2 full dial
 
     private final Runnable tick=new Runnable(){
@@ -94,17 +80,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         power=(PowerManager)getSystemService(Context.POWER_SERVICE);
         keyguard=(KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
         active=true;
-        hiddenForWake=false;
         lastIssue="";
-        if(!receiverRegistered){
-            try {
-                IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_OFF);
-                registerReceiver(screenEvents,filter);
-                receiverRegistered=true;
-            }catch(Exception error){
-                Log.w(TAG,"Could not register screen-off state listener",error);
-            }
-        }
         activeInstance=new WeakReference<>(this);
         handler.removeCallbacks(tick);
         handler.post(tick);
@@ -124,20 +100,18 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
 
     private void safelyCheckState(){
         try { checkState(); }
-        catch(RuntimeException failure){
-            Log.e(TAG,"Accessibility service check failed",failure);
-            lastIssue="Erreur lors de l'affichage du cadran";
-            hiddenForWake=true;
+        catch(RuntimeException error){
+            Log.e(TAG,"NEON service cannot update screen",error);
+            lastIssue="Erreur d'affichage : vérifie le service Android";
             hideOverlay();
         }
     }
 
     private void safelyShowDialOnUserGesture(){
         try { showDialOnUserGesture(); }
-        catch(RuntimeException failure){
-            Log.e(TAG,"Could not open NEON dial after gesture",failure);
-            lastIssue="Impossible d'ouvrir le cadran au balayage";
-            hiddenForWake=true;
+        catch(RuntimeException error){
+            Log.e(TAG,"NEON dial opening failed",error);
+            lastIssue="Impossible d'ouvrir le cadran après le geste";
             hideOverlay();
         }
     }
@@ -164,9 +138,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             return;
         }
         if(!isAwakeAndLocked()){
-            // Conserver hiddenForWake tant que l'écran reste allumé.
-            // Sinon une transition Keyguard (unlock/lock) réaffiche le fond
-            // puis l'indicateur de balayage dans le même cycle de réveil.
+            hiddenForWake=false;
             hideOverlay();
             return;
         }
@@ -238,7 +210,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             manager.addView(hint,params);
             root=hint;mode=1;lastIssue="";
         }catch(Exception failure){
-            lastIssue="Android refuse l'affichage du bouton NEON";
+            lastIssue="Android refuse le bouton de balayage";
             hiddenForWake=true;hideOverlay();
             Log.w(TAG,"Cannot show swipe affordance",failure);
         }
@@ -301,7 +273,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             manager.addView(container,p);
             root=container;wheel=visual;mode=2;lastIssue="";
         }catch(Exception failure){
-            lastIssue="Android refuse l'affichage du cadran NEON";
+            lastIssue="Android refuse d'afficher le cadran";
             Log.w(TAG,"Cannot show dial on top of Android lockscreen",failure);
             hiddenForWake=true;
             hideOverlay();
@@ -343,19 +315,14 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     }
 
     private void finishUnlockWithAndroid(){
-        // Par défaut, ne PAS supprimer automatiquement le verrouillage Android :
-        // certains appareils passent directement à l'accueil, ce qui donne
-        // l'impression que le code PIN attendu a disparu.
+        // Mode de base v0.5 confirmé sur téléphone : aucune activité de transition.
+        // Le mode de demande Android reste facultatif et expérimental.
         boolean nativeRequest=LockPrefs.prefs(this)
             .getBoolean(LockPrefs.NATIVE_UNLOCK_AFTER_NEON,false);
         if(!nativeRequest){
             dismissForWake();
             return;
         }
-        // Le code NEON a été vérifié. Une simple suppression de la fenêtre
-        // superposée laisse Android sur son écran verrouillé et oblige
-        // à un deuxième balayage. Un Activity visible doit demander la
-        // fermeture officielle du Keyguard, sans supprimer son vrai PIN.
         hiddenForWake=true;
         if(!isAwakeAndLocked()){
             hideOverlay();
@@ -366,13 +333,10 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION |
                 Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            // L'activité est lancée pendant que la fenêtre NEON visible
-            // est encore présente ; Android peut néanmoins restreindre
-            // ce lancement sur certains appareils.
             startActivity(intent);
         }catch(Exception failure){
-            Log.w(TAG,"Android refused to open native unlock bridge",failure);
-            Toast.makeText(this,"Déverrouille avec Android",Toast.LENGTH_SHORT).show();
+            Log.w(TAG,"Cannot start Android unlock bridge",failure);
+            lastIssue="Déverrouille avec Android ; transition automatique refusée";
         }finally {
             hideOverlay();
         }
@@ -388,18 +352,10 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void unregisterScreenReceiver(){
-        if(!receiverRegistered)return;
-        receiverRegistered=false;
-        try{unregisterReceiver(screenEvents);}
-        catch(Exception ignored){}
-    }
-
     @Override public boolean onUnbind(android.content.Intent intent){
         active=false;
         activeInstance.clear();
         handler.removeCallbacksAndMessages(null);
-        unregisterScreenReceiver();
         hideOverlay();
         return super.onUnbind(intent);
     }
@@ -408,7 +364,6 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         active=false;
         activeInstance.clear();
         handler.removeCallbacksAndMessages(null);
-        unregisterScreenReceiver();
         hideOverlay();
         super.onDestroy();
     }

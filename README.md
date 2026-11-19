@@ -73,3 +73,14 @@ L'option introduite en v0.6.0 pour fermer automatiquement le Keyguard a été re
 - Protège le traitement des événements et du réveil contre une exception de l'interface, et affiche une erreur de surcouche si Android refuse le cadran.
 - Conserve le fond animé, le geste de balayage, la validation automatique du chiffre (450 ms), et le PIN Android natif.
 - Le message Android « Ce service ne fonctionne pas » peut encore nécessiter la désactivation/réactivation du service sur l'appareil. En cas de panne persistante, récupérer la trace Android du crash ; une compilation réussie ne prouve pas le fonctionnement sur HyperOS.
+
+## v0.8.0 — Retour au cœur fonctionnel v0.5.0
+
+- Réintroduit la logique d'affichage au réveil de v0.5.0 (version signalée fonctionnelle sur HyperOS) à la place du cycle d'état introduit dans les versions suivantes.
+- Ne dépend plus de la réception du broadcast ACTION_SCREEN_OFF pour réarmer le cadran, éliminant une source potentielle de blocage permanent du mode automatique.
+- Restaure le comportement de base après le code NEON (retour au verrouillage Android), même si le second balayage reste possible sur certains modèles.
+- Conserve la validation automatique des chiffres 450 ms après relâchement, la personnalisation et le fond animé.
+- Conserve le diagnostic « service réellement connecté » de v0.7.1, une protection des rappels périodiques et les messages d'échec en cas de refus d'affichage.
+- La transition directe vers le code natif reste une option expérimentale, non recommandée tant qu'elle n'est pas testée sur le téléphone. La laisser **désactivée** pour tester la stabilité de cette version.
+
+Les sources et le build peuvent être vérifiés sur GitHub. Il reste indispensable de confirmer le bon fonctionnement sur le téléphone réel.
