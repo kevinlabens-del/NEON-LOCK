@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import java.util.ArrayList;
 
 /** Launch screen: seven live-previews and a direct one-touch theme picker. */
@@ -200,12 +201,15 @@ public final class ThemeGalleryActivity extends Activity {
     static final class ThemePreview extends View{
         private final int theme;
         private boolean attached;
+        private final Rect visibleRect=new Rect();
         private final Handler handler=new Handler(Looper.getMainLooper());
         private final Runnable tick=new Runnable(){
             @Override public void run(){
                 if(!attached)return;
-                invalidate();
-                handler.postDelayed(this,100);
+                // Never keep rendering thumbnails scrolled out of the viewport.
+                if(isShown() && getGlobalVisibleRect(visibleRect))invalidate();
+                handler.postDelayed(this,
+                    ThemePrefs.batterySaver(getContext())?250:125);
             }
         };
         ThemePreview(Context context,int index){super(context);theme=index;}
