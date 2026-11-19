@@ -263,49 +263,35 @@ final class VaultArt {
         // rectangle, rounded banner, dark mask, or border behind the digits.
         // Hours, minutes and seconds are placed directly onto the central round.
 
-        // Accurate live HH:mm:ss, with the seconds on the customizable neon channel.
-        String hours=String.format(Locale.getDefault(),"%02d:%02d",
+        // Central circle shows ONLY hours and minutes (HH:mm).
+        // Seconds remain available as wheel motion, not as central text.
+        String time=String.format(Locale.getDefault(),"%02d:%02d",
             now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
-        String seconds=String.format(Locale.getDefault(),":%02d",
-            now.get(Calendar.SECOND));
-        float size=r*.207f;
-        p.setTextSize(size);
+        float size=r*.276f;
         p.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
-        float total=p.measureText(hours)+p.measureText(seconds);
-        // Keep the full live clock inside the round face for all display sizes.
-        if(total>r*.78f){
-            size*=r*.78f/total;
+        p.setTextSize(size);
+        float textWidth=p.measureText(time);
+        if(textWidth>r*.70f){
+            size*=r*.70f/textWidth;
             p.setTextSize(size);
-            total=p.measureText(hours)+p.measureText(seconds);
         }
-        float left=cx-total*.5f;
-        p.setTextAlign(Paint.Align.LEFT);
+        p.setTextAlign(Paint.Align.CENTER);
         p.setStyle(Paint.Style.FILL);
+        p.setShader(null);
         p.setColor(style.clockColor);
         p.setShadowLayer(size*.14f,0f,0f,Color.argb(95,210,231,255));
-        float baseline=cy+r*.130f;
-        canvas.drawText(hours,left,baseline,p);
-        p.clearShadowLayer();
-        p.setColor(accent);
-        p.setShadowLayer(size*.17f,0f,0f,accent);
-        canvas.drawText(seconds,left+p.measureText(hours),baseline,p);
+        canvas.drawText(time,cx,cy+r*.17f,p);
         p.clearShadowLayer();
 
-        // The orange engraved divider is already part of the 3D image.
-        // Avoid drawing a second line or an opaque display panel.
-        p.setStyle(Paint.Style.FILL);
-        int remaining=60-now.get(Calendar.SECOND);
+        // Retain the optional countdown setting, but NEVER show seconds
+        // inside the center circle. Put the counter BELOW the entire dial.
         if(style.showCountdown){
-            drawText(canvas,p,String.format(Locale.getDefault(),
-                "%02d SEC RESTANTES",remaining),cx,cy+r*.307f,
-                r*.075f,style.numberColor,true,false);
-        }else{
-            for(int i=0;i<3;i++){
-                p.setColor(accent);
-                float barH=(i==1?.052f:.030f)*r;
-                canvas.drawRoundRect(new RectF(cx+(i-1)*r*.045f-r*.010f,
-                    cy+r*.305f-barH,cx+(i-1)*r*.045f+r*.010f,
-                    cy+r*.305f),r*.005f,r*.005f,p);
+            int remaining=60-now.get(Calendar.SECOND);
+            float outsideY=Math.min(h-r*.09f,cy+r*1.155f);
+            if(outsideY>cy+r*1.025f){
+                drawText(canvas,p,String.format(Locale.getDefault(),
+                    "%02d SEC RESTANTES",remaining),cx,outsideY,
+                    r*.079f,style.numberColor,true,false);
             }
         }
 
