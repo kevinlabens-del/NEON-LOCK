@@ -30,7 +30,7 @@ public final class ThemeMath {
     }
     public static int cyclingTheme(int anchor,long cycles,int count){
         int size=Math.max(1,count);
-        long a=((long)anchor+Math.max(0,cycles))%size;
+        long a=((long)clamp(anchor,0,size-1)+Math.max(0,cycles))%size;
         return (int)((a+size)%size);
     }
     public static boolean fitsCircle(float textWidth,float centerRadius){
