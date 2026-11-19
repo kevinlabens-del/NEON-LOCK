@@ -72,18 +72,18 @@ jobs:
           # archive and manifest rather than grepping a source resource name.
           unzip -t app/build/outputs/apk/release/app-release.apk >/dev/null
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "package: name='com.creatix.neonlock'"
-          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.2.4.apk
+          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.3.0.apk
       - name: Publish installable signed release artifact
         if: env.NEON_SIGNING_READY == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: NEON-LOCK-v1.2.4-SIGNED
-          path: NEON-LOCK-v1.2.4.apk
+          name: NEON-LOCK-v1.3.0-SIGNED
+          path: NEON-LOCK-v1.3.0.apk
           if-no-files-found: error
       - name: Create/update downloadable GitHub Release
         if: env.NEON_SIGNING_READY == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view v1.2.4 >/dev/null 2>&1 || gh release create v1.2.4 --title "NEON LOCK v1.2.4" --notes "Fond anime 3D conserve. Le bouton Reglages Android a ete supprime. Verification automatique des versions officielles GitHub, telechargement et verification SHA-256, installation Android avec confirmation. Nouvelle cle de signature persistante : transition unique depuis les versions de test debug necessaire."
-          gh release upload v1.2.4 NEON-LOCK-v1.2.4.apk --clobber
+          gh release view v1.3.0 >/dev/null 2>&1 || gh release create v1.3.0 --title "NEON LOCK v1.3.0" --notes "Sept themes animes 3D dans une seule APK : Vault Original, Cyber Hologram, Royal Gold, Red Reactor, Steampunk, Galaxy Pulse et Arc Reactor (creation originale). Galerie et apercus, reglage individuel des couleurs, taille, position, vitesse, luminosite, changement automatique de theme, economie de batterie, heure HH:mm centrale et chiffres droits. Fond anime et mise a jour GitHub conserves ; meme signature privee que v1.2.4."
+          gh release upload v1.3.0 NEON-LOCK-v1.3.0.apk --clobber
