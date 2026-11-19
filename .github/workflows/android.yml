@@ -1,4 +1,4 @@
-name: NEON LOCK - APK Android
+name: NEON LOCK - Android APK and secure releases
 on:
   push:
     branches: [main]
@@ -21,23 +21,66 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-      - name: Build signed debug APK
+
+      # CI compilation always runs, even before the owner configures a private signing key.
+      - name: Compile debug APK and verify code
         run: gradle :app:assembleDebug --no-daemon --stacktrace
-      - name: Verify APK file
-        run: test -s app/build/outputs/apk/debug/app-debug.apk
-      - name: Verify 3D dial graphic included in APK
-        run: unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_reference' && unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_wheel_clean' && unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_center_clean'
-      - name: Publish APK as artifact
+      - name: Verify embedded 3D artwork
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_reference'
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_wheel_clean'
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_center_clean'
+      - name: Publish CI build for debugging only
         uses: actions/upload-artifact@v4
         with:
-          name: NEON-LOCK-APK
+          name: NEON-LOCK-CI-DEBUG-NOT-FOR-UPDATES
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-      - name: Prepare APK name
-        run: cp app/build/outputs/apk/debug/app-debug.apk NEON-LOCK-v1.2.3.apk
-      - name: Create/update download release
+
+      # Public repository: never commit or upload a keystore to git or release assets.
+      - name: Load persistent signing key privately
+        env:
+          NEON_KEYSTORE_BASE64: ${{ secrets.NEON_KEYSTORE_BASE64 }}
+          NEON_SIGNING_PASSWORD: ${{ secrets.NEON_SIGNING_PASSWORD }}
+        run: |
+          if [[ -n "$NEON_KEYSTORE_BASE64" && -n "$NEON_SIGNING_PASSWORD" ]]; then
+            umask 077
+            printf '%s' "$NEON_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/neon-release.jks"
+            test -s "$RUNNER_TEMP/neon-release.jks"
+            echo "NEON_SIGNING_STORE_FILE=$RUNNER_TEMP/neon-release.jks" >> "$GITHUB_ENV"
+            echo "NEON_SIGNING_READY=true" >> "$GITHUB_ENV"
+          elif [[ -n "$NEON_KEYSTORE_BASE64" || -n "$NEON_SIGNING_PASSWORD" ]]; then
+            echo "::error::Only one of the required signing Secrets is set. Set both."
+            exit 1
+          else
+            echo "::warning::Release not published. Configure NEON_KEYSTORE_BASE64 and NEON_SIGNING_PASSWORD in GitHub Actions Secrets. A temporary debug key cannot update existing installs."
+            echo "NEON_SIGNING_READY=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build release with persistent private signing key
+        if: env.NEON_SIGNING_READY == 'true'
+        env:
+          NEON_SIGNING_PASSWORD: ${{ secrets.NEON_SIGNING_PASSWORD }}
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+      - name: Verify APK signature and release artifact
+        if: env.NEON_SIGNING_READY == 'true'
+        run: |
+          test -s app/build/outputs/apk/release/app-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk
+          unzip -Z1 app/build/outputs/apk/release/app-release.apk | grep -q 'neon_vault_center_clean'
+          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.2.4.apk
+      - name: Publish installable signed release artifact
+        if: env.NEON_SIGNING_READY == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEON-LOCK-v1.2.4-SIGNED
+          path: NEON-LOCK-v1.2.4.apk
+          if-no-files-found: error
+      - name: Create/update downloadable GitHub Release
+        if: env.NEON_SIGNING_READY == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view v1.2.3 >/dev/null 2>&1 || gh release create v1.2.3 --title "NEON LOCK v1.2.3" --notes "APK Android de test signée (debug). Horloge centrale simplifiee en HH:mm uniquement; aucun compteur de secondes dans le disque central. Decompte optionnel sous la molette, roue 3D animee et personnalisations conservees. Sans accès sensible. Ne remplace pas le verrouillage sécurisé Android."
-          gh release upload v1.2.3 NEON-LOCK-v1.2.3.apk --clobber
+          gh release view v1.2.4 >/dev/null 2>&1 || gh release create v1.2.4 --title "NEON LOCK v1.2.4" --notes "Fond anime 3D conserve. Le bouton Reglages Android a ete supprime. Verification automatique des versions officielles GitHub, telechargement et verification SHA-256, installation Android avec confirmation. Nouvelle cle de signature persistante : transition unique depuis les versions de test debug necessaire."
+          gh release upload v1.2.4 NEON-LOCK-v1.2.4.apk --clobber
