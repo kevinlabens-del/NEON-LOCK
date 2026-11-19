@@ -1,5 +1,7 @@
 # NEON LOCK
 
-Application Android native avec cadran lumineux rotatif, code visuel local et fond d’écran animé. Le verrouillage sécurisé Android demeure actif.
+Application Android native (Java) avec cadran rotatif néon, validation visuelle par code, fond d’écran animé avec horloge.
 
-La compilation automatique se déclenche sur la branche `main` et publie une APK de test dans les Releases lorsque GitHub Actions dispose des autorisations nécessaires.
+**Sécurité :** ne désactive, contourne ni ne remplace le verrouillage sécurisé d’Android. L’écran personnalisé ne se lance pas automatiquement à chaque réveil.
+
+Une compilation de test signée par la clé debug Android est publiée dans **Releases**, dès qu’un build GitHub Actions réussit.
