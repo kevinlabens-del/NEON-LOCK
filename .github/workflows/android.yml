@@ -32,10 +32,10 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Prepare APK name
-        run: cp app/build/outputs/apk/debug/app-debug.apk NEON-LOCK-v0.3.0.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk NEON-LOCK-v0.4.0.apk
       - name: Create/update download release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view v0.3.0 >/dev/null 2>&1 || gh release create v0.3.0 --title "NEON LOCK v0.3.0" --notes "APK Android de test signée (debug). Cadran automatique expérimental via service d'accessibilité, à activer volontairement. Ne remplace pas le verrouillage sécurisé Android."
-          gh release upload v0.3.0 NEON-LOCK-v0.3.0.apk --clobber
+          gh release view v0.4.0 >/dev/null 2>&1 || gh release create v0.4.0 --title "NEON LOCK v0.4.0" --notes "APK Android de test signée (debug). Validation des chiffres automatique 450ms après arrêt du cadran; sans root. Ne remplace pas le verrouillage sécurisé Android."
+          gh release upload v0.4.0 NEON-LOCK-v0.4.0.apk --clobber

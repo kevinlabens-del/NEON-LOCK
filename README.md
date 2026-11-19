@@ -1,4 +1,4 @@
-# NEON LOCK — v0.3.0 (expérimentale)
+# NEON LOCK — v0.4.0 (expérimentale)
 
 Application personnelle Android sans root avec **cadran automatique facultatif**.
 
@@ -27,3 +27,7 @@ Les versions de test GitHub Actions peuvent être signées par différentes clé
 Android peut refuser l'installation au-dessus de v0.2.0. Dans ce cas, désinstalle NEON LOCK et réinstalle la v0.3.0 ; tu devras reconfigurer le code et le fond d'écran. Aucun droit root nécessaire.
 
 Build via GitHub Actions > Releases > v0.3.0. Compilation = validation du code, **pas test réel sur le téléphone**.
+
+
+## v0.4 — Saisie automatique du code
+Tourner et relâcher la roue. Le chiffre sous la flèche orange est validé automatiquement 450 ms après la fin du geste. Un nouveau toucher pendant ce délai annule la validation. Toucher un chiffre de la couronne le sélectionne aussi. La confirmation manuelle au centre reste facultative. Compatible avec le cadran de test et celui affiché sur l’écran verrouillé.

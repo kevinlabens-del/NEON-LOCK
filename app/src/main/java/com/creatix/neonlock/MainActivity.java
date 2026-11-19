@@ -323,18 +323,31 @@ public class MainActivity extends Activity {
         private final boolean interactive;
         private float rotation,lastX,lastY,lastAngle;
         private int entered=0,length=4,state=0;
-        private boolean demo=true,moved,wallpaperPreview;
+        private boolean demo=true,moved,wallpaperPreview,downOnRing;
         private OnDigit listener;
+        private static final long SETTLE_DELAY_MS=450L;
+        private final Handler settleHandler=new Handler(Looper.getMainLooper());
+        private final Runnable confirmDigit=()->{
+            if(interactive && listener!=null && state==0 && isAttachedToWindow()){
+                performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+                listener.accept(selected());
+            }
+        };
+
         Wheel(Context c,boolean interactive){
             super(c);
             this.interactive=interactive;
             if(interactive) setLayerType(View.LAYER_TYPE_SOFTWARE,null);
-            setContentDescription("Cadran à dix chiffres : tourne la roue, touche le centre pour valider");
+            setContentDescription("Cadran numérique : tourne et relâche pour saisir automatiquement");
         }
         void setListener(OnDigit l){listener=l;}
         void setEntered(int v){entered=v;invalidate();}
         void setLength(int v){length=v;invalidate();}
-        void setState(int v){state=v;invalidate();}
+        void setState(int v){
+            state=v;
+            if(v!=0) settleHandler.removeCallbacks(confirmDigit);
+            invalidate();
+        }
         void setDemo(boolean v){demo=v;invalidate();}
         void setWallpaperPreview(boolean v){wallpaperPreview=v;invalidate();}
         int selected(){return ((Math.round(-rotation/36f)%10)+10)%10;}
@@ -342,39 +355,74 @@ public class MainActivity extends Activity {
             super.onDraw(canvas);
             Art.draw(canvas,getWidth(),getHeight(),rotation,selected(),entered,length,state,wallpaperPreview,demo,getContext());
         }
+        private void scheduleConfirmation(){
+            settleHandler.removeCallbacks(confirmDigit);
+            if(listener!=null && state==0) {
+                settleHandler.postDelayed(confirmDigit,SETTLE_DELAY_MS);
+            }
+        }
         @Override public boolean onTouchEvent(MotionEvent ev){
-            if(!interactive||state!=0)return false;
-            float x=ev.getX(),y=ev.getY(),cx=getWidth()*.5f,cy=getHeight()*.62f;
+            if(!interactive || state!=0)return false;
+            float x=ev.getX(), y=ev.getY(), cx=getWidth()*.5f,cy=getHeight()*.62f;
             float radius=Art.radius(getWidth(),getHeight(),false,.62f);
             float angle=(float)Math.toDegrees(Math.atan2(y-cy,x-cx));
             float distance=(float)Math.hypot(x-cx,y-cy);
             switch(ev.getActionMasked()){
                 case MotionEvent.ACTION_DOWN:
-                    lastX=x;lastY=y;lastAngle=angle;moved=false;return true;
+                    settleHandler.removeCallbacks(confirmDigit);
+                    lastX=x;
+                    lastY=y;
+                    lastAngle=angle;
+                    moved=false;
+                    downOnRing=distance>=radius*.33f && distance<=radius*1.18f;
+                    return true;
                 case MotionEvent.ACTION_MOVE:
-                    if(distance>radius*.38f){
+                    if(downOnRing && distance>radius*.30f){
                         float delta=angle-lastAngle;
                         if(delta>180f)delta-=360f;
                         if(delta< -180f)delta+=360f;
                         if(Math.abs(delta)<80f)rotation+=delta;
                     }
                     if(Math.hypot(x-lastX,y-lastY)>dp(getContext(),12))moved=true;
-                    lastAngle=angle;invalidate();return true;
+                    lastAngle=angle;
+                    invalidate();
+                    return true;
                 case MotionEvent.ACTION_UP:
-                    if(!moved&&distance<radius*.38f){performClick();}
-                    else if(!moved&&distance<radius*1.08f){
+                    if(!moved && distance<radius*.33f){
+                        // Maintient la confirmation manuelle comme solution de secours.
+                        performClick();
+                    }else if(downOnRing && moved){
+                        rotation=Math.round(rotation/36f)*36f;
+                        invalidate();
+                        scheduleConfirmation();
+                    }else if(!moved && downOnRing && distance<radius*1.18f){
                         int i=Math.round((angle+90f-rotation)/36f);
                         i=((i%10)+10)%10;
-                        rotation=-i*36f;invalidate();
-                    }return true;
-                case MotionEvent.ACTION_CANCEL:return true;
+                        rotation=-i*36f;
+                        invalidate();
+                        scheduleConfirmation();
+                    }
+                    downOnRing=false;
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    downOnRing=false;
+                    settleHandler.removeCallbacks(confirmDigit);
+                    return true;
                 default:return false;
             }
         }
         @Override public boolean performClick(){
+            settleHandler.removeCallbacks(confirmDigit);
             super.performClick();
-            if(listener!=null&&state==0)listener.accept(selected());
+            if(listener!=null && state==0){
+                performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
+                listener.accept(selected());
+            }
             return true;
+        }
+        @Override protected void onDetachedFromWindow(){
+            settleHandler.removeCallbacks(confirmDigit);
+            super.onDetachedFromWindow();
         }
     }
 
@@ -469,7 +517,7 @@ public class MainActivity extends Activity {
                     c.drawCircle(x,cy-r*1.33f,r*.037f,p);
                 }
                 String hint=state==1?(demo?"DÉMO VALIDÉE":"ACCESS GRANTED")
-                    :state==2?"CODE INCORRECT":"TOURNE • TOUCHE LE CENTRE";
+                    :state==2?"CODE INCORRECT":"TOURNE • RELÂCHE • AUTO";
                 center(c,p,hint,cx,cy+r*1.40f,r*.11f,
                     state==1?GREEN:state==2?Color.rgb(255,77,104):MUTED,true);
             }
