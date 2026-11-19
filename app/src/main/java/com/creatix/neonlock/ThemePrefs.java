@@ -42,6 +42,10 @@ public final class ThemePrefs {
             .putLong("auto_anchor_time",System.currentTimeMillis()).apply();
     }
     public static boolean autoChange(Context c){return prefs(c).getBoolean("auto_change",false);}
+    public static boolean batterySaver(Context c){return prefs(c).getBoolean("battery_saver",false);}
+    public static void setBatterySaver(Context c,boolean enabled){
+        prefs(c).edit().putBoolean("battery_saver",enabled).apply();
+    }
     public static void setAutoChange(Context c,boolean enabled){
         prefs(c).edit().putBoolean("auto_change",enabled)
             .putInt("auto_anchor_theme",selected(c))
