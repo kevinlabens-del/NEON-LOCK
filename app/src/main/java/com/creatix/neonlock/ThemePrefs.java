@@ -70,6 +70,51 @@ public final class ThemePrefs {
     public static int accent(Context c,int index){
         return prefs(c).getInt(key(index,"accent"),defaultColor(index));
     }
+    public static int material(Context c,int id){
+        return ThemeMath.clamp(prefs(c).getInt(key(id,"material"),0),0,3);
+    }
+    public static int digitStyle(Context c,int id){
+        return ThemeMath.clamp(prefs(c).getInt(key(id,"digits"),0),0,2);
+    }
+    public static int centerStyle(Context c,int id){
+        return ThemeMath.clamp(prefs(c).getInt(key(id,"center"),0),0,3);
+    }
+    public static boolean nightPalette(Context c,int id){
+        return prefs(c).getBoolean(key(id,"night_palette"),false);
+    }
+    public static int nightColor(Context c,int id){
+        return prefs(c).getInt(key(id,"night_color"),0xff477aca);
+    }
+    public static int effectiveAccent(Context c,int index){
+        int original=accent(c,index);
+        if(!nightPalette(c,index))return original;
+        int hour=Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if(!ThemeMath.isNight(hour))return original;
+        int target=nightColor(c,index);
+        return Color.rgb(
+            (Color.red(original)+Color.red(target))/2,
+            (Color.green(original)+Color.green(target))/2,
+            (Color.blue(original)+Color.blue(target))/2);
+    }
+    /** For devices where Android exposes separate home and lock wallpaper engines (API 34+). */
+    public static int verticalForScreen(Context c,int index,boolean lock){
+        if(!lock)return vertical(c,index);
+        return ThemeMath.clamp(prefs(c).getInt(key(index,"lock_vertical"),
+            vertical(c,index)),35,80);
+    }
+    public static boolean parallaxEnabled(Context c){
+        return prefs(c).getBoolean("parallax",true);
+    }
+    public static boolean startupEnabled(Context c){
+        return prefs(c).getBoolean("startup_animation",true);
+    }
+    public static int targetFps(Context c,boolean powerSave){
+        if(powerSave)return 12;
+        return batterySaver(c)?15:30;
+    }
+    public static void setGlobal(Context c,String key,boolean value){
+        prefs(c).edit().putBoolean(key,value).apply();
+    }
     public static void setAccent(Context c,int index,int color){
         prefs(c).edit().putInt(key(index,"accent"),color|0xff000000).apply();
         // The old Vault settings remain authoritative for the original bitmap.
@@ -119,7 +164,8 @@ public final class ThemePrefs {
     }
     public static void reset(int index,Context c){
         SharedPreferences.Editor edit=prefs(c).edit();
-        for(String field:new String[]{"accent","glow","size","speed","vertical","adaptive","reverse"})
+        for(String field:new String[]{"accent","glow","size","speed","vertical","lock_vertical",
+            "adaptive","reverse","material","digits","center","night_palette","night_color"})
             edit.remove(key(index,field));
         edit.apply();
     }
