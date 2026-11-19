@@ -262,9 +262,11 @@ public final class MainActivity extends Activity {
             Calendar now=Calendar.getInstance();
             float elapsed=now.get(Calendar.SECOND)+now.get(Calendar.MILLISECOND)/1000f;
             int secondsLeft=60-now.get(Calendar.SECOND);
-            float rotation=-360f*elapsed/60f;
-            // 0 .. 6 : sept positions sur le disque de coffre-fort (1 tour/min).
-            int highlighted=Math.round(elapsed/60f*7f)%7;
+            // La molette tourne dans le sens horaire : le repère fixe
+            // rencontre les chiffres 6, 5, 4, 3, 2, 1, 0, puis recommence.
+            float phase=elapsed/60f;
+            float rotation=360f/7f+360f*phase;
+            int highlighted=(6-(Math.round(phase*7f)%7)+7)%7;
 
             // Rayures radiales de métal et 120 petites graduations qui tournent.
             for(int tick=0;tick<120;tick++){
