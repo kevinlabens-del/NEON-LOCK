@@ -60,11 +60,18 @@ public class SettingsActivity extends Activity {
 
         section("CADRAN AUTOMATIQUE — SANS ROOT");
         MainActivity.add(content,label(
-            "Mode expérimental : NEON LOCK tente d'afficher le cadran quand tu allumes l'écran verrouillé. " +
-            "Ton code Android reste obligatoire. Un bouton permet toujours de revenir à Android.",
+            "Mode expérimental : le fond animé reste visible au réveil ; " +
+            "un geste ouvre le cadran NEON. Le verrouillage Android reste obligatoire.",
             14,MainActivity.MUTED,false),this,9);
-        toggle("Afficher mon cadran au réveil",LockPrefs.AUTO_DIAL,
+        toggle("Activer le cadran NEON sur l'écran verrouillé",LockPrefs.AUTO_DIAL,
             LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false));
+        toggle("Afficher d'abord le fond, puis balayer vers le haut",LockPrefs.SWIPE_FIRST,
+            LockPrefs.prefs(this).getBoolean(LockPrefs.SWIPE_FIRST,true));
+        MainActivity.add(content,label(
+            "Réveil → fond d'écran visible → glisser vers le haut ou toucher le petit bouton « Code NEON » → cadran. " +
+            "Après le code NEON, le véritable verrouillage Android reste actif. " +
+            "Désactive la deuxième option si tu préfères afficher immédiatement le cadran.",
+            13,MainActivity.MUTED,false),this,9);
         accessibilityStatus=label("",14,MainActivity.WHITE,false);
         MainActivity.add(content,accessibilityStatus,this,9);
         Button authorize=MainActivity.button(this,"OUVRIR LES PARAMÈTRES D’ACCESSIBILITÉ",

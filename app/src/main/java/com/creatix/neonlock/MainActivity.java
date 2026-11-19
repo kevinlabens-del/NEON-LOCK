@@ -530,6 +530,40 @@ public class MainActivity extends Activity {
             private final Handler handler=new Handler(Looper.getMainLooper());
             private final Runnable render=this::drawNow;
             private boolean visible;
+            private float swipeStartX,swipeStartY;
+            private boolean trackingSwipe;
+            NeonEngine() {
+                // Android peut transmettre les gestes aux fonds animés ; les OEM
+                // ne sont pas obligés de les transmettre à l'écran verrouillé.
+                setTouchEventsEnabled(true);
+            }
+            @Override public void onTouchEvent(MotionEvent event) {
+                if(!visible || isPreview())return;
+                KeyguardManager km=(KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+                if(km==null || !km.isKeyguardLocked())return;
+                if(!LockPrefs.prefs(LiveWallpaper.this).getBoolean(LockPrefs.AUTO_DIAL,false) ||
+                    !LockPrefs.prefs(LiveWallpaper.this).getBoolean(LockPrefs.SWIPE_FIRST,true))return;
+                switch(event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        swipeStartX=event.getX();
+                        swipeStartY=event.getY();
+                        trackingSwipe=true;
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if(trackingSwipe) {
+                            float dx=event.getX()-swipeStartX;
+                            float dy=event.getY()-swipeStartY;
+                            if(dy< -dp(LiveWallpaper.this,62) && Math.abs(dy)>Math.abs(dx)*1.3f) {
+                                NeonLockAccessibilityService.requestDialFromWallpaper();
+                            }
+                        }
+                        trackingSwipe=false;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        trackingSwipe=false;
+                        break;
+                }
+            }
             @Override public void onVisibilityChanged(boolean v){
                 visible=v;handler.removeCallbacks(render);
                 if(v)drawNow();

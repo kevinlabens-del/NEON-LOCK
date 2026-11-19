@@ -31,3 +31,13 @@ Build via GitHub Actions > Releases > v0.3.0. Compilation = validation du code, 
 
 ## v0.4 — Saisie automatique du code
 Tourner et relâcher la roue. Le chiffre sous la flèche orange est validé automatiquement 450 ms après la fin du geste. Un nouveau toucher pendant ce délai annule la validation. Toucher un chiffre de la couronne le sélectionne aussi. La confirmation manuelle au centre reste facultative. Compatible avec le cadran de test et celui affiché sur l’écran verrouillé.
+
+## v0.5.0 — Fond animé + balayage + cadran
+- Nouvelle séquence par défaut : **réveil → fond (sans masque opaque) → geste vers le haut → cadran NEON → verrouillage sécurisé Android**.
+- Le code visuel et le service d’accessibilité doivent rester activés ; l'activation du fond animé ne doit plus masquer le cadran par-dessus au réveil.
+- Geste détecté par le service de fond animé lorsque le fabricant transmet les événements tactiles au fond.
+- Fallback robuste : une petite zone flottante « ↑ BALAYER POUR LE CODE NEON » (glissement ou simple tapotement), placée au-dessus des raccourcis du système. Elle ne couvre pas tout l’écran.
+- Nouvelle préférence dans Paramètres : « Afficher d'abord le fond, puis balayer vers le haut », activée par défaut. Désactiver pour retrouver le cadran immédiat.
+- La touche « PASSER À ANDROID » reste accessible lorsque le cadran est affiché, indépendamment du code NEON.
+- Après le code NEON, **Android exige toujours son propre déverrouillage**. Aucune méthode ne désactive ni ne contourne le Keyguard.
+- Limitations : les politiques Android 16 / HyperOS peuvent empêcher le fond de recevoir le glissement ou le service de s'afficher ; tester sur l'appareil.
