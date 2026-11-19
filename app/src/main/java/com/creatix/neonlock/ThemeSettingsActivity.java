@@ -108,6 +108,14 @@ public final class ThemeSettingsActivity extends Activity {
                 ThemePrefs.setBatterySaver(this,checked);
             });
 
+        section("ATELIER ET CRÉATIONS PERSONNALISÉES");
+        Button workshop=MainActivity.button(this,
+            "✦  MATIÈRES, CHIFFRES, PROFILS ET PALETTES JOUR/NUIT",
+            0xff21364f,0xfff0f7ff);
+        workshop.setOnClickListener(v->startActivity(
+            new Intent(this,ThemeDesignerActivity.class)));
+        add(workshop,8);
+
         section("CHANGEMENT AUTOMATIQUE DES THÈMES");
         addToggle("Changer de thème automatiquement",
             ThemePrefs.autoChange(this),checked->{
