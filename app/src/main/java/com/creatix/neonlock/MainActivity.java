@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -166,116 +167,165 @@ public final class MainActivity extends Activity {
         }
     }
 
-    /** Six 10-second intervals: labels 0..6 along a 270-degree neon arc. */
+    /**
+     * Horloge conçue à partir du cadran original v0.5 :
+     * fond bleu-noir, disque métallique, deux arcs orange, triangle fixe en haut.
+     * La roue de chiffres 0..6 tourne continûment pendant une minute.
+     * Le décompte précis 60..01 est affiché sous l'heure au centre.
+     */
     static final class ClockArt {
-        private static final float START=135f;
-        private static final float SWEEP=270f;
         private ClockArt(){}
+
+        static void center(Canvas c,Paint p,String s,float x,float y,float size,
+                           int color,boolean bold){
+            p.setShader(null);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(color);
+            p.setTextAlign(Paint.Align.CENTER);
+            p.setTextSize(size);
+            p.setTypeface(Typeface.create("sans-serif",bold?Typeface.BOLD:Typeface.NORMAL));
+            c.drawText(s,x,y,p);
+        }
+
+        private static int tint(int rgb,int alpha){
+            return Color.argb(alpha,Color.red(rgb),Color.green(rgb),Color.blue(rgb));
+        }
+
+        private static float radius(float w,float h,boolean preview,float cy){
+            float base=Math.min(w*.39f,h*(preview?.29f:.23f));
+            float bottomFree=h-cy-h*(preview?.06f:.07f);
+            return Math.max(1f,Math.min(base,bottomFree/(preview?1.33f:1.15f)));
+        }
 
         static void draw(Canvas canvas,int width,int height,Context context,boolean preview){
             if(width<=0||height<=0)return;
-            canvas.drawColor(BG);
+            float w=width,h=height;
             LockPrefs.Style style=LockPrefs.get(context);
-            float cx=width/2f;
-            float cy=height*(preview?.51f:style.verticalPercent/100f);
-            float r=Math.min(width*.36f,height*(preview?.37f:.20f));
-            float density=context.getResources().getDisplayMetrics().density;
-            r=Math.max(12f,r);
-            Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
+            Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
             p.setDither(true);
-            p.setStyle(Paint.Style.FILL);
-            p.setShader(new RadialGradient(cx,cy,r*2.15f,
-                new int[]{Color.rgb(22,35,56),BG},null,Shader.TileMode.CLAMP));
-            canvas.drawCircle(cx,cy,r*2.15f,p);
+
+            // Même fond sombre satiné que la v0.5.
+            p.setShader(new LinearGradient(0,0,w,h,
+                new int[]{Color.rgb(3,6,12),Color.rgb(14,20,34),Color.rgb(4,8,16)},
+                null,Shader.TileMode.CLAMP));
+            canvas.drawRect(0,0,w,h,p);
             p.setShader(null);
 
-            RectF track=new RectF(cx-r,cy-r,cx+r,cy+r);
+            float cx=w*.5f;
+            float cy=h*(preview?.52f:style.verticalPercent/100f);
+            float r=radius(w,h,preview,cy);
+            if(r<5f)return;
+            final int accent=style.ringColor;
+
+            // Halo doux et disque métallisé.
+            p.setShader(new RadialGradient(cx,cy,r*1.7f,
+                new int[]{Color.argb(100,39,63,93),Color.argb(28,20,30,47),Color.TRANSPARENT},
+                null,Shader.TileMode.CLAMP));
+            canvas.drawCircle(cx,cy,r*1.7f,p);
+            p.setShader(null);
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(Color.rgb(5,10,20));
+            canvas.drawCircle(cx,cy,r*1.10f,p);
+            p.setShader(new RadialGradient(cx-r*.18f,cy-r*.20f,r*1.26f,
+                new int[]{Color.rgb(43,51,68),Color.rgb(24,32,49),
+                    Color.rgb(10,15,27),Color.rgb(4,8,16)},
+                new float[]{0f,.35f,.76f,1f},Shader.TileMode.CLAMP));
+            canvas.drawCircle(cx,cy,r*.99f,p);
+            p.setShader(null);
+
+            // Biseaux concentriques d'une molette de coffre-fort.
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeCap(Paint.Cap.ROUND);
-            p.setStrokeWidth(density*5f);
-            p.setColor(withAlpha(style.ringColor,55));
-            canvas.drawArc(track,START,SWEEP,false,p);
+            p.setStrokeWidth(r*.020f);
+            p.setColor(Color.rgb(62,75,95));
+            canvas.drawCircle(cx,cy,r*.985f,p);
+            p.setColor(Color.rgb(14,24,42));
+            p.setStrokeWidth(r*.037f);
+            canvas.drawCircle(cx,cy,r*.955f,p);
+            p.setStrokeWidth(r*.010f);
+            p.setColor(Color.rgb(87,104,125));
+            canvas.drawCircle(cx,cy,r*.930f,p);
+
+            // Les arcs orange caractéristiques du modèle 0.5, restent fixes.
+            p.setStrokeWidth(r*.052f);
+            p.setColor(tint(accent,62));
+            canvas.drawArc(cx-r*1.075f,cy-r*1.075f,cx+r*1.075f,cy+r*1.075f,
+                194f,134f,false,p);
+            p.setColor(accent);
+            p.setStrokeWidth(r*.022f);
+            canvas.drawArc(cx-r*1.075f,cy-r*1.075f,cx+r*1.075f,cy+r*1.075f,
+                194f,134f,false,p);
+            canvas.drawArc(cx-r*1.12f,cy-r*1.12f,cx+r*1.12f,cy+r*1.12f,
+                12f,37f,false,p);
 
             Calendar now=Calendar.getInstance();
-            float seconds=now.get(Calendar.SECOND)+now.get(Calendar.MILLISECOND)/1000f;
-            float traveled=SWEEP*(seconds/60f);
-            p.setColor(withAlpha(style.ringColor,70));
-            p.setStrokeWidth(density*10f);
-            canvas.drawArc(track,START,traveled,false,p);
-            p.setColor(style.ringColor);
-            p.setStrokeWidth(density*3f);
-            canvas.drawArc(track,START,traveled,false,p);
+            float elapsed=now.get(Calendar.SECOND)+now.get(Calendar.MILLISECOND)/1000f;
+            int secondsLeft=60-now.get(Calendar.SECOND);
+            float rotation=-360f*elapsed/60f;
+            // 0 .. 6 : sept positions sur le disque de coffre-fort (1 tour/min).
+            int highlighted=Math.round(elapsed/60f*7f)%7;
 
-            for(int i=0;i<=60;i++){
-                float angle=(float)Math.toRadians(START+SWEEP*i/60f);
-                boolean major=i%10==0;
-                float outer=r*(major?1.01f:.995f);
-                float inner=r*(major?.91f:.962f);
-                p.setStyle(Paint.Style.STROKE);
-                p.setStrokeWidth(density*(major?1.8f:1f));
-                p.setColor(withAlpha(style.numberColor,major?220:90));
+            // Rayures radiales de métal et 120 petites graduations qui tournent.
+            for(int tick=0;tick<120;tick++){
+                float angle=(float)Math.toRadians(tick*3f-90f+rotation);
+                boolean heavy=tick%10==0;
+                p.setColor(heavy?Color.rgb(126,151,172):Color.rgb(49,64,85));
+                p.setStrokeWidth(r*(heavy?.012f:.0045f));
+                float inner=r*(heavy?.80f:.86f);
+                float outer=r*.91f;
                 canvas.drawLine(cx+(float)Math.cos(angle)*inner,
                     cy+(float)Math.sin(angle)*inner,
                     cx+(float)Math.cos(angle)*outer,
                     cy+(float)Math.sin(angle)*outer,p);
             }
-            p.setStyle(Paint.Style.FILL);
-            p.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
-            p.setTextSize(Math.max(density*14,r*.145f));
-            p.setTextAlign(Paint.Align.CENTER);
+
+            // Chiffres sur la roue en mouvement, repère triangulaire IMMOBILE.
             for(int i=0;i<=6;i++){
-                float angle=(float)Math.toRadians(START+SWEEP*i/6f);
-                p.setColor(i==(int)(seconds/10)?style.ringColor:style.numberColor);
-                canvas.drawText(String.valueOf(i),
-                    cx+(float)Math.cos(angle)*r*.77f,
-                    cy+(float)Math.sin(angle)*r*.77f-p.ascent()*.35f,
-                    p);
+                float a=(float)Math.toRadians(i*(360f/7f)-90f+rotation);
+                float x=cx+(float)Math.cos(a)*r*.66f;
+                float y=cy+(float)Math.sin(a)*r*.66f;
+                boolean selected=(i==highlighted);
+                center(canvas,p,String.valueOf(i),x,y+r*.052f,
+                    r*(selected?.175f:.154f),
+                    selected?accent:style.numberColor,selected);
             }
 
-            float angle=(float)Math.toRadians(START+traveled);
-            float px=cx+(float)Math.cos(angle)*r;
-            float py=cy+(float)Math.sin(angle)*r;
-            p.setColor(style.ringColor);
-            canvas.drawCircle(px,py,density*5,p);
-            p.setColor(withAlpha(style.ringColor,65));
-            canvas.drawCircle(px,py,density*10,p);
-
-            p.setColor(withAlpha(style.clockColor,35));
+            Path arrow=new Path();
+            arrow.moveTo(cx-r*.081f,cy-r*1.005f);
+            arrow.lineTo(cx+r*.081f,cy-r*1.005f);
+            arrow.lineTo(cx,cy-r*.865f);
+            arrow.close();
+            p.setColor(tint(accent,95));
             p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(density*1.4f);
-            canvas.drawCircle(cx,cy,r*.47f,p);
+            p.setStrokeWidth(r*.033f);
+            canvas.drawPath(arrow,p);
             p.setStyle(Paint.Style.FILL);
-            p.setColor(style.clockColor);
-            p.setTextAlign(Paint.Align.CENTER);
-            p.setTypeface(Typeface.create("sans-serif",Typeface.BOLD));
-            p.setTextSize(Math.max(density*31,r*.30f));
-            String time=String.format(Locale.getDefault(),"%02d:%02d",
-                now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
-            canvas.drawText(time,cx,cy-p.ascent()*.20f,p);
+            p.setColor(accent);
+            canvas.drawPath(arrow,p);
 
-            p.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
-            p.setTextSize(Math.max(density*11,r*.105f));
-            p.setColor(style.numberColor);
-            int remaining=60-now.get(Calendar.SECOND);
-            canvas.drawText(String.format(Locale.getDefault(),"%02d s restantes",remaining),
-                cx,cy+r*.37f,p);
+            // Moyeu central, à la manière du cadran du coffre-fort v0.5.
+            p.setColor(Color.rgb(7,11,20));
+            canvas.drawCircle(cx,cy,r*.375f,p);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(r*.014f);
+            p.setColor(Color.rgb(75,89,110));
+            canvas.drawCircle(cx,cy,r*.375f,p);
+            p.setStyle(Paint.Style.FILL);
+            String hour=String.format(Locale.getDefault(),"%02d:%02d",
+                now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
+            center(canvas,p,hour,cx,cy+r*.095f,r*.285f,style.clockColor,true);
+            center(canvas,p,String.format(Locale.getDefault(),"%02d s",secondsLeft),
+                cx,cy+r*.275f,r*.125f,accent,true);
 
             if(style.showTitle){
-                p.setTextSize(Math.max(density*15,r*.13f));
-                p.setTypeface(Typeface.DEFAULT_BOLD);
-                p.setColor(style.titleColor);
-                canvas.drawText("NEON CLOCK",cx,cy-r*1.35f,p);
+                center(canvas,p,"NEON  LOCK",cx,h*.11f,r*.17f,
+                    style.titleColor,true);
             }
             if(style.showDate){
-                p.setTypeface(Typeface.DEFAULT);
-                p.setTextSize(Math.max(density*12,r*.11f));
-                p.setColor(style.dateColor);
-                canvas.drawText(new SimpleDateFormat("EEE d MMM yyyy",
-                    Locale.getDefault()).format(new Date()),cx,cy+r*1.37f,p);
+                String date=new SimpleDateFormat("EEEE d MMMM",Locale.FRANCE)
+                    .format(new Date()).toUpperCase(Locale.FRANCE);
+                center(canvas,p,date,cx,h*.15f,r*.105f,style.dateColor,false);
             }
-        }
-        private static int withAlpha(int color,int alpha){
-            return Color.argb(alpha,Color.red(color),Color.green(color),Color.blue(color));
         }
     }
 
