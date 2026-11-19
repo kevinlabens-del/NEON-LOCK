@@ -42,7 +42,7 @@ public final class SettingsActivity extends Activity {
             MainActivity.dp(this,20),MainActivity.dp(this,28));
         scroll.addView(content);
         MainActivity.add(content,label("PERSONNALISATION 3D",26,MainActivity.WHITE,true),this,0);
-        MainActivity.add(content,label("Ton visuel 3D original, sans porte autour : une molette métallique 0–6 qui tourne, avec les chiffres toujours droits et lisibles. Heure et secondes en direct.",
+        MainActivity.add(content,label("Ton visuel 3D original, sans porte autour : une molette métallique 0–6 qui tourne, avec les chiffres toujours droits et lisibles. Heure et minutes au centre.",
             14,MainActivity.MUTED,false),this,6);
         preview=new MainActivity.ClockView(this,true);
         LinearLayout.LayoutParams previewLp=new LinearLayout.LayoutParams(-1,MainActivity.dp(this,325));
@@ -63,7 +63,7 @@ public final class SettingsActivity extends Activity {
         section("ANIMATION ET ÉCLAIRAGE");
         toggle("Tourner dans l'autre sens",LockPrefs.REVERSE_ROTATION,
             LockPrefs.get(this).reverseRotation);
-        toggle("Afficher les secondes restantes",LockPrefs.SHOW_COUNTDOWN,
+        toggle("Afficher le décompte sous la molette",LockPrefs.SHOW_COUNTDOWN,
             LockPrefs.get(this).showCountdown);
         TextView glowLevel=label("Puissance néon : "+LockPrefs.get(this).neonIntensity,15,
             MainActivity.WHITE,true);
