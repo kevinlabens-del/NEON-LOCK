@@ -30,7 +30,7 @@ final class ThemeTexture {
             BitmapFactory.Options options=new BitmapFactory.Options();
             options.inScaled=false;
             try{atlas=BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.neon_six_hd_textures,options);}
+                R.drawable.neon_v140_hd_atlas,options);}
             catch(OutOfMemoryError error){atlas=null;}
         }
         return atlas;
