@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     static final int WHITE = Color.rgb(232,241,254);
     static final int MUTED = Color.rgb(142,159,184);
     private TextView status;
+    private Wheel preview;
 
     static int dp(Context c, float value) {
         return Math.round(value * c.getResources().getDisplayMetrics().density);
@@ -104,13 +105,17 @@ public class MainActivity extends Activity {
         title.setLetterSpacing(.1f);
         add(content,title,this,12);
         add(content,text(this,"Cadran numérique lumineux et fond d'écran animé.",15,MUTED,false),this,7);
-        Wheel preview = new Wheel(this,false);
+        preview = new Wheel(this,false);
         preview.setDemo(true);
+        preview.setWallpaperPreview(true);
         LinearLayout.LayoutParams frame = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,dp(this,325));
         frame.setMargins(0,dp(this,8),0,0);
         content.addView(preview,frame);
 
+        Button settings = button(this,"⚙  PERSONNALISER LE VERROUILLAGE",GREEN,Color.BLACK);
+        settings.setOnClickListener(v -> startActivity(new Intent(this,SettingsActivity.class)));
+        add(content,settings,this,8);
         Button test = button(this,"▶  TESTER LE CADRAN",ORANGE,Color.BLACK);
         test.setOnClickListener(v -> startActivity(new Intent(this,DialActivity.class)));
         add(content,test,this,8);
@@ -137,6 +142,11 @@ public class MainActivity extends Activity {
             "(code PIN, empreinte, visage). NEON LOCK ajoute un cadran visuel et un " +
             "fond d'écran ; il ne s'affiche pas automatiquement à chaque réveil.",13,MUTED,false),this,14);
         setContentView(sc);
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if(preview != null) preview.invalidate();
     }
 
     private void refreshStatus() {
@@ -306,7 +316,7 @@ public class MainActivity extends Activity {
         private final boolean interactive;
         private float rotation,lastX,lastY,lastAngle;
         private int entered=0,length=4,state=0;
-        private boolean demo=true,moved;
+        private boolean demo=true,moved,wallpaperPreview;
         private OnDigit listener;
         Wheel(Context c,boolean interactive){
             super(c);
@@ -319,15 +329,16 @@ public class MainActivity extends Activity {
         void setLength(int v){length=v;invalidate();}
         void setState(int v){state=v;invalidate();}
         void setDemo(boolean v){demo=v;invalidate();}
+        void setWallpaperPreview(boolean v){wallpaperPreview=v;invalidate();}
         int selected(){return ((Math.round(-rotation/36f)%10)+10)%10;}
         @Override protected void onDraw(Canvas canvas){
             super.onDraw(canvas);
-            Art.draw(canvas,getWidth(),getHeight(),rotation,selected(),entered,length,state,false,demo);
+            Art.draw(canvas,getWidth(),getHeight(),rotation,selected(),entered,length,state,wallpaperPreview,demo,getContext());
         }
         @Override public boolean onTouchEvent(MotionEvent ev){
             if(!interactive||state!=0)return false;
-            float x=ev.getX(),y=ev.getY(),cx=getWidth()*.5f,cy=getHeight()*.51f;
-            float radius=Math.min(getWidth()*.39f,getHeight()*.28f);
+            float x=ev.getX(),y=ev.getY(),cx=getWidth()*.5f,cy=getHeight()*.62f;
+            float radius=Art.radius(getWidth(),getHeight(),false,.62f);
             float angle=(float)Math.toDegrees(Math.atan2(y-cy,x-cx));
             float distance=(float)Math.hypot(x-cx,y-cy);
             switch(ev.getActionMasked()){
@@ -367,24 +378,36 @@ public class MainActivity extends Activity {
             p.setTypeface(Typeface.create("sans-serif",bold?Typeface.BOLD:Typeface.NORMAL));
             c.drawText(s,x,y,p);
         }
+        static float radius(float w,float h,boolean wallpaper,float verticalFraction){
+            float cy=h*verticalFraction;
+            float base=Math.min(w*.39f,h*(wallpaper?.23f:.28f));
+            float available=(h-cy-h*(wallpaper?.07f:.08f))/(wallpaper?1.15f:1.43f);
+            return Math.max(1f,Math.min(base,available));
+        }
         static void draw(Canvas c,float w,float h,float rotation,int selected,int entered,
-                         int length,int state,boolean wallpaper,boolean demo){
+                         int length,int state,boolean wallpaper,boolean demo,Context context){
+            LockPrefs.Style style=LockPrefs.get(context);
             Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
             p.setShader(new LinearGradient(0,0,w,h,new int[]{Color.rgb(3,6,12),
                 Color.rgb(14,20,34),Color.rgb(4,8,16)},null,Shader.TileMode.CLAMP));
             c.drawRect(0,0,w,h,p);p.setShader(null);
-            float cx=w*.5f,cy=h*.51f;
-            float r=Math.min(w*.39f,h*(wallpaper?.23f:.28f));
+            float pos=wallpaper?style.verticalPercent/100f:.62f;
+            float cx=w*.5f,cy=h*pos;
+            float r=radius(w,h,wallpaper,pos);
             if(r<1f)return;
-            int accent=state==1?GREEN:state==2?Color.rgb(255,77,104):ORANGE;
+            int accent=state==1?GREEN:state==2?Color.rgb(255,77,104):style.ringColor;
             p.setShader(new RadialGradient(cx,cy,r*1.65f,
                 new int[]{Color.argb(90,38,62,92),Color.argb(25,20,30,47),Color.TRANSPARENT},
                 null,Shader.TileMode.CLAMP));
             c.drawCircle(cx,cy,r*1.65f,p);p.setShader(null);
             if(wallpaper){
-                center(c,p,"NEON  LOCK",cx,h*.11f,r*.17f,GREEN,true);
-                String date=new SimpleDateFormat("EEEE d MMMM",Locale.FRANCE).format(new Date());
-                center(c,p,date.toUpperCase(Locale.FRANCE),cx,h*.15f,r*.105f,MUTED,false);
+                if(style.showTitle){
+                    center(c,p,"NEON  LOCK",cx,h*.11f,r*.17f,style.titleColor,true);
+                }
+                if(style.showDate){
+                    String date=new SimpleDateFormat("EEEE d MMMM",Locale.FRANCE).format(new Date());
+                    center(c,p,date.toUpperCase(Locale.FRANCE),cx,h*.15f,r*.105f,style.dateColor,false);
+                }
             }else{
                 center(c,p,demo?"MODE DÉMONSTRATION":"CODE VISUEL LOCAL",cx,
                     Math.max(r*.3f,cy-r*1.52f),r*.115f,GREEN,true);
@@ -417,7 +440,7 @@ public class MainActivity extends Activity {
                 float a=(float)Math.toRadians(i*36-90+rotation);
                 float x=cx+(float)Math.cos(a)*r*.66f,y=cy+(float)Math.sin(a)*r*.66f;
                 center(c,p,String.valueOf(i),x,y+r*.052f,r*(i==selected?.17f:.15f),
-                    i==selected?accent:Color.rgb(167,183,205),i==selected);
+                    i==selected?accent:style.numberColor,i==selected);
             }
             Path arrow=new Path();
             arrow.moveTo(cx-r*.08f,cy-r*.99f);
@@ -431,7 +454,7 @@ public class MainActivity extends Activity {
             String middle=wallpaper?new SimpleDateFormat("HH:mm",Locale.FRANCE).format(new Date())
                 :state==1?"✓":String.valueOf(selected);
             center(c,p,middle,cx,cy+r*.14f,r*(wallpaper?.29f:.45f),
-                state==1?GREEN:WHITE,true);
+                state==1?GREEN:style.clockColor,true);
             if(!wallpaper){
                 for(int i=0;i<length;i++){
                     float x=cx+(i-(length-1)*.5f)*r*.19f;
@@ -473,7 +496,7 @@ public class MainActivity extends Activity {
                     if(c!=null){
                         float a=(System.currentTimeMillis()%60000L)/1000f*6f;
                         int selected=((Math.round(-a/36f)%10)+10)%10;
-                        Art.draw(c,c.getWidth(),c.getHeight(),a,selected,0,4,0,true,true);
+                        Art.draw(c,c.getWidth(),c.getHeight(),a,selected,0,4,0,true,true,LiveWallpaper.this);
                     }
                 }catch(Exception ignored){}
                 finally{
