@@ -1,49 +1,52 @@
-# NEON LOCK v1.2.4 — fond animé 3D avec mises à jour intégrées
+# NEON LOCK v1.3.0 — Seven Themes Edition
 
-Application Android native `com.creatix.neonlock`, basée sur le visuel de coffre-fort 3D fourni par son créateur.
+**Application Android native** de fond d'écran animé, conçue pour fonctionner sans PC, sans compte et hors ligne après installation.
 
-## Fonctionnement du fond animé
+## Les sept thèmes intégrés
 
-- Une seule molette ronde en métal brossé, **sans porte de coffre-fort autour**.
-- Numéros **0 à 6 toujours droits**, même pendant la rotation de la couronne métallique.
-- Heure **HH:mm uniquement** dans le disque central ; les secondes peuvent se décompter sous la molette.
-- Repère orange immobile, éclairage néon et intensité réglables.
-- Couleurs, titre, date, position de la molette et sens de rotation personnalisables.
-- Fond animé disponible sur accueil / écran verrouillé selon le constructeur. Aucune fonction de verrouillage propriétaire ni accessibilité.
+| N° | Thème | Esthétique |
+|---:|---|---|
+| 1 | Vault Original | Photo d'origine, acier brossé et lumière orange |
+| 2 | Cyber Hologram | HUD holographique bleu cyan, arcs et repères lumineux |
+| 3 | Royal Gold | Horlogerie de luxe en or, repères romains et mini-engrenages |
+| 4 | Red Reactor | Mécanisme noir avec segments d'énergie rouge |
+| 5 | Steampunk | Engrenages cuivre/laiton, rivets et mouvement mécanique |
+| 6 | Galaxy Pulse | Cercle cosmique violet, étoiles et vagues d'énergie |
+| 7 | Arc Reactor | Réacteur énergétique original à bobines bleues et cœur triangulaire, sans logo ni reproduction officielle d'Iron Man |
 
-## Changements v1.2.4
+## Fonctionnalités v1.3.0
 
-- Le bouton « Réglages du verrouillage Android » a été entièrement retiré.
-- Nouvelle vérification des versions officielles publiées dans `kevinlabens-del/NEON-LOCK`.
-- Contrôle automatiquement à l'ouverture (au plus toutes les 6 heures) et vérification périodique via JobScheduler (environ toutes les 12 heures, cadence Android non garantie).
-- Notifications de nouvelles versions possibles si Android autorise les notifications.
-- Bouton « Vérifier les mises à jour » pour demander une vérification immédiate.
-- Téléchargement de l'APK via DownloadManager Android avec notification de téléchargement.
-- Avant installation, **vérification de l'empreinte SHA-256 officielle**, du nom de package, du numéro de version et de la **signature Android**.
-- Installation par l'installateur officiel Android à partir du fichier vérifié. **Confirmation requise** : une application classique ne peut pas garantir de mise à jour silencieuse sans intervention.
-- Si le téléchargement s'est terminé quand l'app était fermée, la prochaine ouverture propose l'installation.
+- Galerie sur l'écran d'accueil avec **7 aperçus animés** ; toucher une carte pour sélectionner son thème.
+- Le fond animé actif adopte immédiatement le thème sélectionné, sans nécessité de réappliquer le fond Android.
+- Réglages indépendants : couleur personnalisable (y compris hexadécimal), intensité néon, taille, position verticale, vitesse de rotation, sens de rotation.
+- Changement automatique des thèmes configurable (toutes les 1, 3, 6, 12 ou 24 heures), désactivé par défaut.
+- Luminosité nocturne adaptative (22 h–7 h), par thème.
+- Mode économie de batterie global (15 FPS au lieu de 30 FPS).
+- **Heure HH:mm au centre uniquement**, sans secondes ; chiffres droits.
+- Fond Vault Original basé sur les images originales et préserve ses réglages historiques.
+- Vérification et téléchargement des nouvelles APK GitHub depuis l'application, contrôle SHA-256/signature, confirmation d'installation Android.
+- Aucune superposition de verrouillage, aucun code NEON et aucune autorisation d'accessibilité.
+- ApplicationId conservé `com.creatix.neonlock`, **versionCode 18** (montée de version depuis v1.2.4, versionCode 17).
 
-## Signature persistante obligatoire
+## Installation et mises à jour
 
-⚠️ **Les versions historiques de test étaient signées par une clé debug potentiellement régénérée par GitHub Actions.** Le nom du package identique ne suffit pas pour mettre à jour une APK existante : Android exige la même clé.
+La release `NEON-LOCK-v1.3.0.apk` est construite via GitHub Actions avec la **même clé de signature permanente** que la version 1.2.4 :
 
-À partir de cette version, le pipeline **ne publie aucune APK officielle si les deux secrets de signature ne sont pas configurés** :
+```text
+NEON_KEYSTORE_BASE64
+NEON_SIGNING_PASSWORD
+```
 
-- `NEON_KEYSTORE_BASE64` : contenu base64 du fichier de signature privé .jks (alias `neonlock`).
-- `NEON_SIGNING_PASSWORD` : mot de passe commun du magasin et de la clé.
+Ces secrets sont utilisés dans GitHub Actions, sans exposer la clé privée dans le dépôt. La CI vérifie la signature, la structure de l'APK et l'identifiant Android, puis publie l'APK dans Releases.
 
-Procédure détaillée : [SIGNATURE-ET-MAJ.md](SIGNATURE-ET-MAJ.md).
+La mise à jour de 1.2.4 à 1.3.0 doit pouvoir être effectuée **par-dessus** l'installation actuelle, sans suppression des réglages, sous réserve de la confirmation Android.
 
-La build debug sert **uniquement à tester la compilation** et ne doit pas être distribuée comme une mise à jour.
+## Notes techniques
 
-### Transition unique
+- 100 % Java / Android Canvas (sans moteurs de jeux ni téléchargement de ressources externes).
+- Les six thèmes ajoutés sont **des rendus procéduraux originaux** : cadrans et animations vectoriels, pas des images haute définition identiques à la maquette promotionnelle.
+- Vault Original réutilise les textures photographiques fournies, pour conserver le rendu existant.
+- L'animation ne tourne que quand le fond est visible.
+- La cadence des tâches automatiques dépend des restrictions d'arrière-plan Android/HyperOS.
 
-Une fois la clé configurée, installer la première APK de release signée avec cette clé. Si une ancienne édition debug du même package est déjà installée et possède un certificat différent, **une désinstallation unique est nécessaire** ; cette opération peut supprimer les réglages de l'ancienne application. Ensuite, toute future APK signée avec cette même clé est installable **par-dessus** la précédente, en conservant les données de l'application.
-
-## Sources officielles
-
-- [Android — app signing](https://developer.android.com/studio/publish/app-signing)
-- [Android — DownloadManager](https://developer.android.com/reference/android/app/DownloadManager)
-- [Android — PackageManager.canRequestPackageInstalls](https://developer.android.com/reference/android/content/pm/PackageManager#canRequestPackageInstalls())
-
-Aucun système ne contourne Play Protect, les protections Android ou les confirmations d'installation.
+Voir [SIGNATURE-ET-MAJ.md](SIGNATURE-ET-MAJ.md) pour la documentation de signature.

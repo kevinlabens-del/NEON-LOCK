@@ -8,12 +8,17 @@
     <uses-feature android:name="android.software.live_wallpaper" android:required="false"/>
     <application android:icon="@drawable/neon_vault_reference" android:label="NEON LOCK" android:theme="@android:style/Theme.Material.NoActionBar"
         android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
-        <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
+        <activity android:name=".ThemeGalleryActivity" android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity" android:exported="false"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ThemeSettingsActivity" android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity android:name=".SettingsActivity" android:exported="false"
             android:screenOrientation="portrait"/>
         <service android:name=".UpdateCheckJob"
@@ -22,7 +27,7 @@
             android:authorities="com.creatix.neonlock.updates"
             android:exported="false" android:grantUriPermissions="true"/>
         <service android:name=".MainActivity$LiveWallpaper"
-            android:label="NEON LOCK • coffre-fort animé"
+            android:label="NEON LOCK • 7 thèmes 3D"
             android:exported="true"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>

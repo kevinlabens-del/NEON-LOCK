@@ -109,7 +109,7 @@ public final class MainActivity extends Activity {
         TextView title=text(this,"NEON LOCK",32,WHITE,true);
         title.setLetterSpacing(.09f);
         add(content,title,this,12);
-        add(content,text(this,"MOLETTE 3D • ÉDITION ORIGINALE",15,MUTED,false),this,8);
+        add(content,text(this,"7 THÈMES 3D  •  ÉDITION PREMIUM",15,MUTED,false),this,8);
         preview=new ClockView(this,true);
         LinearLayout.LayoutParams frame=new LinearLayout.LayoutParams(-1,dp(this,340));
         frame.topMargin=dp(this,12);
@@ -118,8 +118,11 @@ public final class MainActivity extends Activity {
         Button wallpaper=button(this,"◉  ACTIVER LE FOND D'ÉCRAN ANIMÉ",GREEN,Color.BLACK);
         wallpaper.setOnClickListener(v->chooseWallpaper());
         add(content,wallpaper,this,12);
-        Button customize=button(this,"⚙  PERSONNALISER LA MOLETTE 3D",PANEL,WHITE);
-        customize.setOnClickListener(v->startActivity(new Intent(this,SettingsActivity.class)));
+        Button galleryButton=button(this,"▦  GALERIE DES 7 THÈMES",PANEL,WHITE);
+        galleryButton.setOnClickListener(v->startActivity(new Intent(this,ThemeGalleryActivity.class)));
+        add(content,galleryButton,this,8);
+        Button customize=button(this,"⚙  PERSONNALISER MON THÈME",PANEL,WHITE);
+        customize.setOnClickListener(v->startActivity(new Intent(this,ThemeSettingsActivity.class)));
         add(content,customize,this,8);
         Button updates=button(this,"↻  VÉRIFIER LES MISES À JOUR",PANEL,WHITE);
         updates.setOnClickListener(v->NeonUpdates.check(this,true));
@@ -136,9 +139,9 @@ public final class MainActivity extends Activity {
             add(content,notifications,this,8);
         }
         add(content,text(this,
-            "La molette 3D utilise ton visuel original : elle tourne en 60 secondes. "+
-            "Les chiffres 0 à 6 tournent tout en restant droits, avec "+
-            "uniquement l'heure et les minutes (HH:mm) dans le rond central, sans cadre. "+
+            "Choisis parmi 7 cadrans 3D : Vault Original, Cyber, Royal Gold, "+
+            "Red Reactor, Steampunk, Galaxy Pulse et Arc Reactor. "+
+            "L'heure reste au format HH:mm et tes réglages sont sauvegardés. "+
             "NEON LOCK vérifie automatiquement les nouvelles versions officielles. "+
             "Si une mise à jour existe, tu peux la télécharger puis confirmer "+
             "son installation avec Android. Le fond animé et ses réglages "+
@@ -212,7 +215,7 @@ public final class MainActivity extends Activity {
         }
         @Override protected void onDraw(Canvas canvas){
             super.onDraw(canvas);
-            VaultArt.draw(canvas,getWidth(),getHeight(),getContext(),preview);
+            ThemeArt.draw(canvas,getWidth(),getHeight(),getContext(),preview);
         }
     }
 
@@ -248,7 +251,7 @@ public final class MainActivity extends Activity {
                 Canvas canvas=null;
                 try {
                     canvas=getSurfaceHolder().lockCanvas();
-                    if(canvas!=null)VaultArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
+                    if(canvas!=null)ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
                         LiveWallpaper.this,false);
                 }catch(Exception ignored){
                     // A temporary wallpaper surface can disappear while turning off the screen.
@@ -258,7 +261,8 @@ public final class MainActivity extends Activity {
                         catch(Exception ignored){}
                     }
                 }
-                if(visible)timer.postDelayed(redraw,33);
+                if(visible)timer.postDelayed(redraw,
+                    ThemePrefs.batterySaver(LiveWallpaper.this)?66:33);
             }
         }
     }

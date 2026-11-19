@@ -144,22 +144,27 @@ final class VaultArt {
     static void draw(Canvas canvas,int width,int height,Context context,boolean preview){
         if(width<=0||height<=0)return;
         LockPrefs.Style style=LockPrefs.get(context);
-        Bitmap img=getArt(context,style.ringColor);
-        Bitmap wheelImage=getWheelArt(context,style.ringColor);
+        int selectedAccent=ThemePrefs.prefs(context).contains("t0_accent")?
+            ThemePrefs.accent(context,ThemePrefs.VAULT):style.ringColor;
+        Bitmap img=getArt(context,selectedAccent);
+        Bitmap wheelImage=getWheelArt(context,selectedAccent);
         if(img==null || wheelImage==null){
             canvas.drawColor(MainActivity.BG);
             return;
         }
         final float w=width,h=height;
         final float cx=w*.5f;
-        final float cy=h*(preview?.51f:style.verticalPercent/100f);
-        float r=Math.min(w*.475f,h*(preview?.43f:.27f));
+        final float cy=h*(preview?.51f:ThemePrefs.vertical(context,ThemePrefs.VAULT)/100f);
+        float r=Math.min(w*.475f,h*(preview?.43f:.27f))*
+            ThemePrefs.size(context,ThemePrefs.VAULT)/100f;
         r=Math.min(r,Math.min(cy*.97f,(h-cy)*.96f));
         if(r<10f)return;
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
         p.setDither(true);
-        final int accent=style.ringColor;
-        final int glowAlpha=Math.max(40,Math.min(245,style.neonIntensity));
+        final int accent=selectedAccent;
+        final int glowAlpha=Math.max(40,Math.min(245,
+            ThemePrefs.prefs(context).contains("t0_glow")?
+                ThemePrefs.glow(context,ThemePrefs.VAULT):style.neonIntensity));
 
         // Cinematic black and midnight-blue wallpaper background.
         p.setShader(new LinearGradient(0,0,w,h,
@@ -202,7 +207,10 @@ final class VaultArt {
         Calendar now=Calendar.getInstance();
         float elapsed=now.get(Calendar.SECOND)
             +now.get(Calendar.MILLISECOND)/1000f;
-        float wheelAngle=360f/7f+(style.reverseRotation?-1f:1f)*elapsed*6f;
+        boolean reversed=ThemePrefs.prefs(context).contains("t0_reverse")?
+            ThemePrefs.reverse(context,ThemePrefs.VAULT):style.reverseRotation;
+        float wheelAngle=360f/7f+(reversed?-1f:1f)*elapsed*6f*
+            ThemePrefs.speed(context,ThemePrefs.VAULT)/100f;
         canvas.save();
         Path annulus=new Path();
         annulus.setFillType(Path.FillType.EVEN_ODD);
