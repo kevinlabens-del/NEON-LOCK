@@ -2,6 +2,7 @@ package com.creatix.neonlock;
 
 import android.accessibilityservice.AccessibilityService;
 import android.app.KeyguardManager;
+import android.content.Intent;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -110,7 +111,9 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             return;
         }
         if(!isAwakeAndLocked()){
-            hiddenForWake=false;
+            // Conserver hiddenForWake tant que l'écran reste allumé.
+            // Sinon une transition Keyguard (unlock/lock) réaffiche le fond
+            // puis l'indicateur de balayage dans le même cycle de réveil.
             hideOverlay();
             return;
         }
@@ -263,7 +266,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         input.setLength(0);
         wheel.setState(valid?1:2);
         if(valid){
-            handler.postDelayed(this::dismissForWake,850);
+            handler.postDelayed(this::finishUnlockWithAndroid,850);
         }else{
             failures++;
             if(failures>=5){
@@ -282,6 +285,33 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     private void dismissForWake(){
         hiddenForWake=true;
         hideOverlay();
+    }
+
+    private void finishUnlockWithAndroid(){
+        // Le code NEON a été vérifié. Une simple suppression de la fenêtre
+        // superposée laisse Android sur son écran verrouillé et oblige
+        // à un deuxième balayage. Un Activity visible doit demander la
+        // fermeture officielle du Keyguard, sans supprimer son vrai PIN.
+        hiddenForWake=true;
+        if(!isAwakeAndLocked()){
+            hideOverlay();
+            return;
+        }
+        try {
+            Intent intent=new Intent(this,UnlockBridgeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION |
+                Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            // L'activité est lancée pendant que la fenêtre NEON visible
+            // est encore présente ; Android peut néanmoins restreindre
+            // ce lancement sur certains appareils.
+            startActivity(intent);
+        }catch(Exception failure){
+            Log.w(TAG,"Android refused to open native unlock bridge",failure);
+            Toast.makeText(this,"Déverrouille avec Android",Toast.LENGTH_SHORT).show();
+        }finally {
+            hideOverlay();
+        }
     }
 
     private void hideOverlay(){

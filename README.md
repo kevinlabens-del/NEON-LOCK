@@ -41,3 +41,16 @@ Tourner et relâcher la roue. Le chiffre sous la flèche orange est validé auto
 - La touche « PASSER À ANDROID » reste accessible lorsque le cadran est affiché, indépendamment du code NEON.
 - Après le code NEON, **Android exige toujours son propre déverrouillage**. Aucune méthode ne désactive ni ne contourne le Keyguard.
 - Limitations : les politiques Android 16 / HyperOS peuvent empêcher le fond de recevoir le glissement ou le service de s'afficher ; tester sur l'appareil.
+
+## v0.6.0 — Transition Android sans deuxième balayage inutile
+
+Après validation du code NEON, une activité visible au-dessus du Keyguard appelle
+`KeyguardManager.requestDismissKeyguard()` au lieu de se contenter de retirer la superposition.
+
+- Si Android utilise un simple verrouillage par glissement (non sécurisé), Android **peut** retirer le dernier écran de verrouillage directement.
+- Si Android exige un PIN, un schéma, une empreinte ou une autre authentification, cette demande reste obligatoire et se présente via l'interface système.
+- Si HyperOS/Android 16 bloque le lancement de l'activité ou la fermeture du Keyguard, le fonctionnement retombe sur l'écran verrouillé d'origine (aucune suppression du verrouillage).
+- Le service évite aussi de réafficher son indicateur NEON lors des transitions internes de l'écran verrouillé pendant le même réveil.
+
+Conserve le fond animé, le balayage, la roulette avec confirmation automatique après 450 ms et toutes les options de personnalisation.
+**Aucun contournement du verrouillage sécurisé natif.**
