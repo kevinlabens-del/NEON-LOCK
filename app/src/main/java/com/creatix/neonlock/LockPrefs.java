@@ -53,6 +53,9 @@ public final class LockPrefs {
             this.titleColor=titleColor;this.dateColor=dateColor;
             this.ringColor=ringColor;this.numberColor=numberColor;
             this.clockColor=clockColor;this.verticalPercent=verticalPercent;
+            this.neonIntensity=neonIntensity;
+            this.reverseRotation=reverseRotation;
+            this.showCountdown=showCountdown;
         }
     }
 }
