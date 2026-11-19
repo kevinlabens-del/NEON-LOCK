@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.software.live_wallpaper" android:required="false"/>
-    <application android:label="NEON CLOCK" android:theme="@android:style/Theme.Material.NoActionBar"
+    <application android:label="NEON LOCK" android:theme="@android:style/Theme.Material.NoActionBar"
         android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
             <intent-filter>
@@ -12,7 +12,7 @@
         <activity android:name=".SettingsActivity" android:exported="false"
             android:screenOrientation="portrait"/>
         <service android:name=".MainActivity$LiveWallpaper"
-            android:label="NEON CLOCK animé"
+            android:label="NEON LOCK • coffre-fort animé"
             android:exported="true"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>

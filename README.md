@@ -1,26 +1,28 @@
-# NEON LOCK v1.0.0 — Cadran coffre-fort animé
+# NEON LOCK v1.1.0 — COFFRE-FORT BANCAIRE
 
-Fond d'écran animé Android, sans root et sans fonction de verrouillage propriétaire.
+Transformation du thème Android en véritable **porte blindée de coffre-fort** animée, sans verrouillage logiciel additionnel.
 
-## Design — retour à la v0.5.0
-- Même base graphique que le coffre-fort original v0.5.0 : fond bleu/noir dégradé, métal radial, anneaux de précision, doubles arcs orange, triangle orange fixe en haut et heure dans le moyeu central.
-- Chiffres **0 1 2 3 4 5 6** sur la roue mobile, à la place de 0–9.
-- La **roue métallique tourne continûment** : un tour par minute, synchronisée avec l'horloge du téléphone.
-- **Décompte 60 à 01 secondes** en orange sous l'heure HH:mm au centre.
-- Animation à 30 images/s lorsque le fond est visible, arrêt des rappels lorsque le fond n'est plus visible.
+## Nouveaux détails de la porte
+- Plaque blindée rectangulaire, bords chanfreinés, acier brossé et rainures CNC.
+- Quatre vis de fixation de la porte, douze boulons hexagonaux autour de la roue.
+- Deux grosses charnières latérales en acier, barres de verrouillage apparentes, métal nuancé sombre.
+- Inscription décorative « VAULT / 06 » et signature « CR3@TIX STEEL » sur la porte.
+- Vraie molette mécanique à chiffres **0–6**, disques creusés, rainures et multiples bagues métalliques.
+- Triangle orange fixe en haut, arcs lumineux de la version v0.5, teinte néon personnalisable.
+- Heure **HH:mm** au centre sur moyeu de métal, décompte **60→01 secondes** en dessous.
+- Rotation fluide sur 60 secondes, 30 images/s lorsque le fond est visible.
 
-## Paramètres du fond animé conservés
-- Afficher ou masquer « NEON LOCK » et la date.
-- Personnaliser indépendamment les couleurs du titre, de la date, des arcs, des chiffres et de l'heure.
-- Ajuster la position verticale du cadran (40 à 75 %, 69 % par défaut).
-- Bouton de réinitialisation du thème.
-- Prévisualisation dans l'application, et bouton d'application du fond animé Android.
+## Réglages conservés
+- Afficher ou masquer le titre « NEON LOCK ».
+- Afficher ou masquer la date.
+- Personnaliser les couleurs du titre, de la date, des arcs et repère, des chiffres et de l'heure.
+- Déplacer le cadran verticalement et réinitialiser les préférences visuelles.
+- Prévisualisation animée et bouton de sélection du fond animé sur Android.
 
-## Sécurité
-- Aucun code NEON, aucune superposition sur l'écran sécurisé, aucun service d'accessibilité.
-- Le balayage et la désactivation éventuelle du verrouillage Android ne sont **pas** contrôlés par cette application.
-- Pour afficher le fond sur l'écran de verrouillage, choisir l'option Android « écran d'accueil et écran verrouillé » lorsqu'elle est proposée par le constructeur.
-- La compilation réussie ne garantit pas l'acceptation par Play Protect ni le rendu identique sur tous les firmwares HyperOS.
+## Fonctionnement et sécurité
+Cette application **ne verrouille ni ne déverrouille** le téléphone, et ne modifie pas les paramètres Android.
+Aucun code NEON, aucune autorisation d'accessibilité : la protection native et le balayage restent gérés par Android.
 
 ## Build
-GitHub Actions assemble et publie `NEON-LOCK-v1.0.0.apk` dans Releases. APK de test signée avec une clé de débogage.
+Le workflow GitHub Actions compile une APK de test signée (debug) sous le nom
+`NEON-LOCK-v1.1.0.apk`. La compilation seule ne valide ni l'installation Play Protect ni le rendu réel sur un téléphone.
