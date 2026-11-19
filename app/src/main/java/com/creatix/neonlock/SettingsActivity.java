@@ -4,6 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.content.Intent;
+import android.content.ComponentName;
+import android.provider.Settings;
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.view.accessibility.AccessibilityManager;
+import android.widget.Toast;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
@@ -19,6 +25,7 @@ public class SettingsActivity extends Activity {
     private LinearLayout content;
     private MainActivity.Wheel preview;
     private TextView dialPosition;
+    private TextView accessibilityStatus;
     private final int[] palette = {
         0xff2bffb3, 0xffffab2b, 0xffe8f1fe, 0xff34d7ff,
         0xffff5d9e, 0xffff536b, 0xffa677ff, 0xffffe66b,
@@ -50,6 +57,31 @@ public class SettingsActivity extends Activity {
         LinearLayout.LayoutParams previewParams=new LinearLayout.LayoutParams(-1,MainActivity.dp(this,330));
         previewParams.setMargins(0,MainActivity.dp(this,10),0,MainActivity.dp(this,2));
         content.addView(preview,previewParams);
+
+        section("CADRAN AUTOMATIQUE — SANS ROOT");
+        MainActivity.add(content,label(
+            "Mode expérimental : NEON LOCK tente d'afficher le cadran quand tu allumes l'écran verrouillé. " +
+            "Ton code Android reste obligatoire. Un bouton permet toujours de revenir à Android.",
+            14,MainActivity.MUTED,false),this,9);
+        toggle("Afficher mon cadran au réveil",LockPrefs.AUTO_DIAL,
+            LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false));
+        accessibilityStatus=label("",14,MainActivity.WHITE,false);
+        MainActivity.add(content,accessibilityStatus,this,9);
+        Button authorize=MainActivity.button(this,"OUVRIR LES PARAMÈTRES D’ACCESSIBILITÉ",
+            MainActivity.GREEN,Color.BLACK);
+        authorize.setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+            } catch (Exception error) {
+                Toast.makeText(this,"Réglages d’accessibilité indisponibles.",Toast.LENGTH_LONG).show();
+            }
+        });
+        MainActivity.add(content,authorize,this,8);
+        MainActivity.add(content,label(
+            "L'autorisation est facultative et sensible. Ce service ne lit pas le contenu " +
+            "des autres applications et ne pilote pas leurs actions. Pour arrêter le cadran : " +
+            "désactive l'interrupteur ci-dessus ou le service d'accessibilité.",
+            12,MainActivity.MUTED,false),this,8);
 
         section("AFFICHAGE DU TEXTE");
         toggle("Afficher « NEON LOCK »",LockPrefs.SHOW_TITLE,LockPrefs.get(this).showTitle);
@@ -102,6 +134,25 @@ public class SettingsActivity extends Activity {
         setContentView(scroll);
     }
 
+    @Override protected void onResume(){
+        super.onResume();
+        refresh();
+    }
+
+    private boolean accessibilityEnabled() {
+        try {
+            AccessibilityManager am=(AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE);
+            String id=new ComponentName(this,NeonLockAccessibilityService.class).flattenToString();
+            if(am!=null){
+                for(AccessibilityServiceInfo info:am.getEnabledAccessibilityServiceList(
+                    AccessibilityServiceInfo.FEEDBACK_ALL_MASK)){
+                    if(id.equals(info.getId()))return true;
+                }
+            }
+        }catch(Exception ignored){}
+        return false;
+    }
+
     private TextView label(String text,int size,int color,boolean bold){
         TextView t=MainActivity.text(this,text,size,color,bold);
         t.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
@@ -119,6 +170,10 @@ public class SettingsActivity extends Activity {
         sw.setChecked(checked);
         sw.setOnCheckedChangeListener((b,isChecked)->{
             LockPrefs.prefs(this).edit().putBoolean(key,isChecked).apply();
+            if(LockPrefs.AUTO_DIAL.equals(key) && isChecked &&
+                 MainActivity.Credentials.length(this)==0){
+                Toast.makeText(this,"Configure d'abord ton code visuel dans NEON LOCK.",Toast.LENGTH_LONG).show();
+            }
             refresh();
         });
         MainActivity.add(content,sw,this,10);
@@ -187,6 +242,15 @@ public class SettingsActivity extends Activity {
         if(preview!=null)preview.invalidate();
         if(dialPosition!=null){
             dialPosition.setText("Hauteur du cadran : "+LockPrefs.get(this).verticalPercent+" % de l'écran");
+        }
+        if(accessibilityStatus!=null){
+            boolean enabled=accessibilityEnabled();
+            boolean selected=LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false);
+            String access=enabled?"Service Android autorisé ✓":"Service Android non autorisé";
+            String pin=MainActivity.Credentials.length(this)>0?"Code visuel disponible":"Code visuel à configurer";
+            accessibilityStatus.setText(access+"\n"+pin+"\nMode automatique : "+(selected?"activé":"désactivé"));
+            accessibilityStatus.setTextColor(enabled&&selected&&MainActivity.Credentials.length(this)>0
+                ?MainActivity.GREEN:MainActivity.MUTED);
         }
     }
 }

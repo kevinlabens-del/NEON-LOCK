@@ -116,6 +116,9 @@ public class MainActivity extends Activity {
         Button settings = button(this,"⚙  PERSONNALISER LE VERROUILLAGE",GREEN,Color.BLACK);
         settings.setOnClickListener(v -> startActivity(new Intent(this,SettingsActivity.class)));
         add(content,settings,this,8);
+        Button auto = button(this,"🔐  AFFICHER LE CADRAN AU RÉVEIL",ORANGE,Color.BLACK);
+        auto.setOnClickListener(v -> startActivity(new Intent(this,SettingsActivity.class)));
+        add(content,auto,this,8);
         Button test = button(this,"▶  TESTER LE CADRAN",ORANGE,Color.BLACK);
         test.setOnClickListener(v -> startActivity(new Intent(this,DialActivity.class)));
         add(content,test,this,8);
@@ -140,19 +143,23 @@ public class MainActivity extends Activity {
         add(content,text(this,
             "Important : Android garde toujours le contrôle de son déverrouillage " +
             "(code PIN, empreinte, visage). NEON LOCK ajoute un cadran visuel et un " +
-            "fond d'écran ; il ne s'affiche pas automatiquement à chaque réveil.",13,MUTED,false),this,14);
+            "fond d'écran et un mode cadran superposé facultatif. " +
+            "Le vrai verrouillage Android reste nécessaire et peut être ouvert à tout moment.",13,MUTED,false),this,14);
         setContentView(sc);
     }
 
     @Override protected void onResume() {
         super.onResume();
         if(preview != null) preview.invalidate();
+        if(status != null) refreshStatus();
     }
 
     private void refreshStatus() {
         int n=Credentials.length(this);
-        status.setText(n>0?"Code visuel configuré : "+n+" chiffres.":
-            "Mode démonstration : aucun code visuel configuré.");
+        String code=n>0?"Code visuel configuré : "+n+" chiffres.":
+            "Mode démonstration : aucun code visuel configuré.";
+        boolean automatic=LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false);
+        status.setText(code+"\nCadran au réveil : "+(automatic?"activé (autorisation Android requise)":"désactivé"));
     }
 
     private void chooseWallpaper() {

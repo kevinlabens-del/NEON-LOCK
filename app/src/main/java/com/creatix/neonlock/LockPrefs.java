@@ -15,6 +15,7 @@ public final class LockPrefs {
     public static final String NUMBER_COLOR="number_color";
     public static final String CLOCK_COLOR="clock_color";
     public static final String DIAL_VERTICAL="dial_vertical_percent";
+    public static final String AUTO_DIAL="auto_dial_on_wake";
     private LockPrefs(){}
 
     public static SharedPreferences prefs(Context context) {

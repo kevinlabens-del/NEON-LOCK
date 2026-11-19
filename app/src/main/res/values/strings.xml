@@ -1,1 +1,1 @@
-<resources><string name="wallpaper_description">NEON LOCK, cadran néon animé avec horloge.</string></resources>
+<resources><string name="wallpaper_description">NEON LOCK, cadran néon animé avec horloge.</string><string name="accessibility_description">Affiche un cadran NEON LOCK au réveil, lorsque l’écran est verrouillé. Le service ne lit pas le contenu des autres applications et peut être désactivé dans les paramètres.</string></resources>
