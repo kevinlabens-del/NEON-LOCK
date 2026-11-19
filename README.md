@@ -65,3 +65,11 @@ L'option introduite en v0.6.0 pour fermer automatiquement le Keyguard a été re
 - L'écran paramètres signale si un PIN/schéma/mot de passe sécurisé est réellement configuré sous Android.
 - Le code NEON est un contrôle **visuel** facultatif et ne remplace pas la protection d'Android. Si l'on souhaite une sécurité authentique, configurer aussi le PIN du téléphone dans les paramètres système.
 - Le bouton « Passer à Android » est conservé pour les cas où le service ou HyperOS n'affiche pas correctement le code.
+
+## v0.7.1 — Diagnostic du service d'accessibilité
+
+- Corrige la comparaison des identifiants du service d'accessibilité : Android peut fournir un nom abrégé et l'application affichait à tort « non autorisé ».
+- Distingue « activé dans les paramètres » de « réellement connecté » dans la page de personnalisation.
+- Protège le traitement des événements et du réveil contre une exception de l'interface, et affiche une erreur de surcouche si Android refuse le cadran.
+- Conserve le fond animé, le geste de balayage, la validation automatique du chiffre (450 ms), et le PIN Android natif.
+- Le message Android « Ce service ne fonctionne pas » peut encore nécessiter la désactivation/réactivation du service sur l'appareil. En cas de panne persistante, récupérer la trace Android du crash ; une compilation réussie ne prouve pas le fonctionnement sur HyperOS.
