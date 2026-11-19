@@ -93,7 +93,7 @@ public final class MainActivity extends Activity {
         TextView title=text(this,"NEON LOCK",32,WHITE,true);
         title.setLetterSpacing(.09f);
         add(content,title,this,12);
-        add(content,text(this,"Cadran coffre-fort animé • roue 0 à 6 • heure centrale",15,MUTED,false),this,8);
+        add(content,text(this,"PORTE DE COFFRE-FORT • CADRAN MÉCANIQUE 0–6",15,MUTED,false),this,8);
         preview=new ClockView(this,true);
         LinearLayout.LayoutParams frame=new LinearLayout.LayoutParams(-1,dp(this,340));
         frame.topMargin=dp(this,12);
@@ -102,7 +102,7 @@ public final class MainActivity extends Activity {
         Button wallpaper=button(this,"◉  ACTIVER LE FOND D'ÉCRAN ANIMÉ",GREEN,Color.BLACK);
         wallpaper.setOnClickListener(v->chooseWallpaper());
         add(content,wallpaper,this,12);
-        Button customize=button(this,"⚙  PERSONNALISER L'HORLOGE",PANEL,WHITE);
+        Button customize=button(this,"⚙  PERSONNALISER LE COFFRE-FORT",PANEL,WHITE);
         customize.setOnClickListener(v->startActivity(new Intent(this,SettingsActivity.class)));
         add(content,customize,this,8);
         Button androidLock=button(this,"🔒  RÉGLAGES DU VERROUILLAGE ANDROID",PANEL,WHITE);
@@ -114,8 +114,8 @@ public final class MainActivity extends Activity {
         });
         add(content,androidLock,this,8);
         add(content,text(this,
-            "La roue de coffre-fort effectue un tour toutes les 60 secondes. "+
-            "Les chiffres 0 à 6 tournent sous la flèche orange et un compteur "+
+            "La molette d'acier du coffre-fort effectue un tour toutes les 60 secondes. "+
+            "Les chiffres 0 à 6 tournent sous la flèche orange ; un compteur "+
             "affiche les secondes restantes avant la minute suivante. "+
             "Le balayage et le verrouillage éventuel restent ceux d'Android ; "+
             "cette application n'y demande aucun accès.",13,MUTED,false),this,16);
