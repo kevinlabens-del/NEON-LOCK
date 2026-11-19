@@ -1,36 +1,49 @@
-# NEON LOCK v1.2.3 — heure intégrée au disque central 3D
+# NEON LOCK v1.2.4 — fond animé 3D avec mises à jour intégrées
 
-Cette édition intègre **l'image fournie par l'utilisateur** dans le dossier Android `drawable-nodpi/neon_vault_reference.jpg` et respecte son identité : **une seule molette ronde**, sans porte de coffre-fort, charnières ou décor rectangulaire.
+Application Android native `com.creatix.neonlock`, basée sur le visuel de coffre-fort 3D fourni par son créateur.
 
-## Fond animé photographique
-- Image 3D d'origine comme texture (métal brossé chromé, reflets bleus, néon orange, véritable relief visuel).
-- La molette métallique est découpée virtuellement dans la photo d'origine, **sans les anciens chiffres pré-imprimés**. Une nouvelle texture intérieure `neon_vault_wheel_clean.jpg` préserve le relief du métal. Les **sept chiffres 0 1 2 3 4 5 6** sont placés à leurs positions tournantes puis rendus séparément **sans rotation des glyphes**, donc toujours droits et lisibles, y compris après un demi-tour.
-- La bague mobile tourne continûment en une minute, synchronisée avec les secondes réelles de l'appareil.
-- L'inscription statique « 15:56:24 » de l'image est remplacée à l'affichage par une **heure HH:mm:ss dynamique**. Les secondes s'illuminent en orange ou dans la couleur choisie.
-- Décompte des secondes restantes facultatif sous l'horloge.
-- Rafraîchissement toutes les 33 ms quand le fond animé est visible; les tâches se suspendent autrement.
+## Fonctionnement du fond animé
 
-## Personnalisation
-- **Couleur des LEDs et du repère** : choix de palette ou hexadécimal personnalisé. Les pixels orange du visuel sont recolorés pour préserver les reflets de métal.
-- **Puissance de l'éclairage néon** : réglage de 40 à 245.
-- **Sens de rotation** : normal ou inverse.
-- **Décompte** : afficher/masquer.
-- **Titre/date** : affichage et couleur optionnels.
-- **Couleur de l'heure, des chiffres et de la date**, ainsi que **position verticale** et remise à zéro des réglages.
+- Une seule molette ronde en métal brossé, **sans porte de coffre-fort autour**.
+- Numéros **0 à 6 toujours droits**, même pendant la rotation de la couronne métallique.
+- Heure **HH:mm uniquement** dans le disque central ; les secondes peuvent se décompter sous la molette.
+- Repère orange immobile, éclairage néon et intensité réglables.
+- Couleurs, titre, date, position de la molette et sens de rotation personnalisables.
+- Fond animé disponible sur accueil / écran verrouillé selon le constructeur. Aucune fonction de verrouillage propriétaire ni accessibilité.
 
-## Sécurité et installation
-L'application demeure un **simple fond d'écran animé** : aucun PIN NEON, aucune autorisation d'accessibilité, aucune interception des gestes ni du verrouillage Android. Le verrouillage et le balayage sont gérés séparément par le téléphone.
+## Changements v1.2.4
 
-GitHub Actions assemble l'APK `NEON-LOCK-v1.2.3.apk` (signature debug). Le build ne prouve pas un fonctionnement parfait sur tous les modèles HyperOS. Si Android autorise le fond animé sur l'écran de verrouillage, activer l'option « écran d'accueil et écran verrouillé ».
+- Le bouton « Réglages du verrouillage Android » a été entièrement retiré.
+- Nouvelle vérification des versions officielles publiées dans `kevinlabens-del/NEON-LOCK`.
+- Contrôle automatiquement à l'ouverture (au plus toutes les 6 heures) et vérification périodique via JobScheduler (environ toutes les 12 heures, cadence Android non garantie).
+- Notifications de nouvelles versions possibles si Android autorise les notifications.
+- Bouton « Vérifier les mises à jour » pour demander une vérification immédiate.
+- Téléchargement de l'APK via DownloadManager Android avec notification de téléchargement.
+- Avant installation, **vérification de l'empreinte SHA-256 officielle**, du nom de package, du numéro de version et de la **signature Android**.
+- Installation par l'installateur officiel Android à partir du fichier vérifié. **Confirmation requise** : une application classique ne peut pas garantir de mise à jour silencieuse sans intervention.
+- Si le téléchargement s'est terminé quand l'app était fermée, la prochaine ouverture propose l'installation.
 
-## v1.2.2 — Suppression du rectangle noir central
-- Nouveau visuel `neon_vault_center_clean.jpg` : heure et indicateurs imprimés effacés de la photographie d'origine pour retrouver la surface sombre et métallisée du centre, sans rectangle ajouté par-dessus.
-- Les heures, minutes et secondes réelles sont inscrites **directement sur le disque rond central**, sous la poignée chromée.
-- Le décompte apparaît plus bas dans le disque, sous la ligne orange d'origine ; ajustement de la taille pour ne pas dépasser du cercle.
-- Les chiffres 0–6 restent toujours droits pendant la rotation et tous les réglages existants sont conservés.
+## Signature persistante obligatoire
 
-## v1.2.3 — HH:mm uniquement au centre
-- Le rond central affiche **uniquement heures et minutes**, sans chiffres des secondes ni décompte sous l'heure.
-- La rotation continue de la molette 0–6 traduit toujours les secondes.
-- L'option de décompte des secondes reste disponible mais s'affiche **sous la molette**, en dehors du rond central.
-- Tous les réglages existants de couleurs, éclairage, position et sens de rotation sont conservés.
+⚠️ **Les versions historiques de test étaient signées par une clé debug potentiellement régénérée par GitHub Actions.** Le nom du package identique ne suffit pas pour mettre à jour une APK existante : Android exige la même clé.
+
+À partir de cette version, le pipeline **ne publie aucune APK officielle si les deux secrets de signature ne sont pas configurés** :
+
+- `NEON_KEYSTORE_BASE64` : contenu base64 du fichier de signature privé .jks (alias `neonlock`).
+- `NEON_SIGNING_PASSWORD` : mot de passe commun du magasin et de la clé.
+
+Procédure détaillée : [SIGNATURE-ET-MAJ.md](SIGNATURE-ET-MAJ.md).
+
+La build debug sert **uniquement à tester la compilation** et ne doit pas être distribuée comme une mise à jour.
+
+### Transition unique
+
+Une fois la clé configurée, installer la première APK de release signée avec cette clé. Si une ancienne édition debug du même package est déjà installée et possède un certificat différent, **une désinstallation unique est nécessaire** ; cette opération peut supprimer les réglages de l'ancienne application. Ensuite, toute future APK signée avec cette même clé est installable **par-dessus** la précédente, en conservant les données de l'application.
+
+## Sources officielles
+
+- [Android — app signing](https://developer.android.com/studio/publish/app-signing)
+- [Android — DownloadManager](https://developer.android.com/reference/android/app/DownloadManager)
+- [Android — PackageManager.canRequestPackageInstalls](https://developer.android.com/reference/android/content/pm/PackageManager#canRequestPackageInstalls())
+
+Aucun système ne contourne Play Protect, les protections Android ou les confirmations d'installation.

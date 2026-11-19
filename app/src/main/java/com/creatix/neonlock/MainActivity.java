@@ -1,6 +1,12 @@
 package com.creatix.neonlock;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -45,6 +51,16 @@ public final class MainActivity extends Activity {
     static final int WHITE=Color.rgb(232,241,254);
     static final int MUTED=Color.rgb(142,159,184);
     private ClockView preview;
+    private Button pendingInstaller;
+    private boolean receiverRegistered=false;
+    private final BroadcastReceiver downloads=new BroadcastReceiver(){
+        @Override public void onReceive(Context context,Intent intent){
+            if(DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())){
+                NeonUpdates.checkDownloaded(MainActivity.this,false);
+                if(pendingInstaller!=null)pendingInstaller.setVisibility(View.VISIBLE);
+            }
+        }
+    };
 
     static int dp(Context context,float amount){
         return Math.round(context.getResources().getDisplayMetrics().density*amount);
@@ -105,25 +121,57 @@ public final class MainActivity extends Activity {
         Button customize=button(this,"⚙  PERSONNALISER LA MOLETTE 3D",PANEL,WHITE);
         customize.setOnClickListener(v->startActivity(new Intent(this,SettingsActivity.class)));
         add(content,customize,this,8);
-        Button androidLock=button(this,"🔒  RÉGLAGES DU VERROUILLAGE ANDROID",PANEL,WHITE);
-        androidLock.setOnClickListener(v->{
-            try { startActivity(new Intent(Settings.ACTION_SECURITY_SETTINGS)); }
-            catch(Exception error){
-                Toast.makeText(this,"Ouvre les paramètres de sécurité Android.",Toast.LENGTH_LONG).show();
-            }
-        });
-        add(content,androidLock,this,8);
+        Button updates=button(this,"↻  VÉRIFIER LES MISES À JOUR",PANEL,WHITE);
+        updates.setOnClickListener(v->NeonUpdates.check(this,true));
+        add(content,updates,this,8);
+        pendingInstaller=button(this,"⬇  INSTALLER LA MISE À JOUR TÉLÉCHARGÉE",PANEL,WHITE);
+        pendingInstaller.setOnClickListener(v->NeonUpdates.checkDownloaded(this,true));
+        pendingInstaller.setVisibility(NeonUpdates.hasPending(this)?View.VISIBLE:View.GONE);
+        add(content,pendingInstaller,this,8);
+        if(Build.VERSION.SDK_INT>=33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){
+            Button notifications=button(this,"🔔  ACTIVER LES ALERTES DE MISE À JOUR",PANEL,WHITE);
+            notifications.setOnClickListener(v->requestPermissions(
+                new String[]{Manifest.permission.POST_NOTIFICATIONS},2401));
+            add(content,notifications,this,8);
+        }
         add(content,text(this,
             "La molette 3D utilise ton visuel original : elle tourne en 60 secondes. "+
             "Les chiffres 0 à 6 tournent tout en restant droits, avec "+
             "uniquement l'heure et les minutes (HH:mm) dans le rond central, sans cadre. "+
-            "Le balayage et le verrouillage éventuel restent ceux d'Android ; "+
-            "cette application n'y demande aucun accès.",13,MUTED,false),this,16);
+            "NEON LOCK vérifie automatiquement les nouvelles versions officielles. "+
+            "Si une mise à jour existe, tu peux la télécharger puis confirmer "+
+            "son installation avec Android. Le fond animé et ses réglages "+
+            "sont conservés lorsque les APK ont la même signature.",13,MUTED,false),this,16);
         setContentView(scroll);
+        NeonUpdates.schedule(this);
     }
     @Override protected void onResume(){
         super.onResume();
         if(preview!=null)preview.invalidate();
+        if(pendingInstaller!=null)
+            pendingInstaller.setVisibility(NeonUpdates.hasPending(this)?View.VISIBLE:View.GONE);
+        NeonUpdates.checkDownloaded(this,false);
+        NeonUpdates.check(this,false);
+    }
+
+    @Override protected void onStart(){
+        super.onStart();
+        try{
+            IntentFilter completed=new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+            if(Build.VERSION.SDK_INT>=33)
+                registerReceiver(downloads,completed,Context.RECEIVER_EXPORTED);
+            else registerReceiver(downloads,completed);
+            receiverRegistered=true;
+        }catch(Exception ignored){receiverRegistered=false;}
+    }
+
+    @Override protected void onStop(){
+        if(receiverRegistered){
+            try{unregisterReceiver(downloads);}catch(Exception ignored){}
+            receiverRegistered=false;
+        }
+        super.onStop();
     }
     private void chooseWallpaper(){
         try {

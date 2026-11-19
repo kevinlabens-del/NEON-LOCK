@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-feature android:name="android.software.live_wallpaper" android:required="false"/>
     <application android:icon="@drawable/neon_vault_reference" android:label="NEON LOCK" android:theme="@android:style/Theme.Material.NoActionBar"
         android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
@@ -11,6 +16,11 @@
         </activity>
         <activity android:name=".SettingsActivity" android:exported="false"
             android:screenOrientation="portrait"/>
+        <service android:name=".UpdateCheckJob"
+            android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <provider android:name=".UpdateApkProvider"
+            android:authorities="com.creatix.neonlock.updates"
+            android:exported="false" android:grantUriPermissions="true"/>
         <service android:name=".MainActivity$LiveWallpaper"
             android:label="NEON LOCK • coffre-fort animé"
             android:exported="true"
