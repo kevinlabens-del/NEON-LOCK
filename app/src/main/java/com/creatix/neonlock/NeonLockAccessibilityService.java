@@ -47,8 +47,17 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     // A service killed or restricted by Android cannot be revived through this method.
     public static void requestDialFromWallpaper() {
         NeonLockAccessibilityService service=activeInstance.get();
-        if(service!=null)service.handler.post(service::showDialOnUserGesture);
+        if(service!=null)service.handler.post(service::safelyShowDialOnUserGesture);
     }
+
+    // Exposé uniquement à l'application : indique l'état réel de la connexion
+    // Android, et non la simple présence de l'interrupteur d'accessibilité.
+    private static volatile String lastIssue = "";
+    public static boolean isConnected() {
+        NeonLockAccessibilityService service=activeInstance.get();
+        return service!=null && service.active;
+    }
+    public static String getLastIssue() { return lastIssue; }
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private WindowManager manager;
@@ -74,7 +83,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     private final Runnable tick=new Runnable(){
         @Override public void run(){
             if(!active)return;
-            checkState();
+            safelyCheckState();
             handler.postDelayed(this,TICK_MS);
         }
     };
@@ -86,6 +95,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         keyguard=(KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
         active=true;
         hiddenForWake=false;
+        lastIssue="";
         if(!receiverRegistered){
             try {
                 IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_OFF);
@@ -104,12 +114,32 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         // Deliberately do not inspect content, text or nodes of other apps.
         if(active && event!=null &&
             event.getEventType()==AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
-            handler.post(this::checkState);
+            handler.post(this::safelyCheckState);
         }
     }
 
     @Override public void onInterrupt(){
         hideOverlay();
+    }
+
+    private void safelyCheckState(){
+        try { checkState(); }
+        catch(RuntimeException failure){
+            Log.e(TAG,"Accessibility service check failed",failure);
+            lastIssue="Erreur lors de l'affichage du cadran";
+            hiddenForWake=true;
+            hideOverlay();
+        }
+    }
+
+    private void safelyShowDialOnUserGesture(){
+        try { showDialOnUserGesture(); }
+        catch(RuntimeException failure){
+            Log.e(TAG,"Could not open NEON dial after gesture",failure);
+            lastIssue="Impossible d'ouvrir le cadran au balayage";
+            hiddenForWake=true;
+            hideOverlay();
+        }
     }
 
     private boolean isAwakeAndLocked(){
@@ -206,8 +236,9 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             "NEON LOCK — glisser pour saisir le code");
         try{
             manager.addView(hint,params);
-            root=hint;mode=1;
+            root=hint;mode=1;lastIssue="";
         }catch(Exception failure){
+            lastIssue="Android refuse l'affichage du bouton NEON";
             hiddenForWake=true;hideOverlay();
             Log.w(TAG,"Cannot show swipe affordance",failure);
         }
@@ -268,8 +299,9 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
             "NEON LOCK — saisie du code visuel");
         try{
             manager.addView(container,p);
-            root=container;wheel=visual;mode=2;
+            root=container;wheel=visual;mode=2;lastIssue="";
         }catch(Exception failure){
+            lastIssue="Android refuse l'affichage du cadran NEON";
             Log.w(TAG,"Cannot show dial on top of Android lockscreen",failure);
             hiddenForWake=true;
             hideOverlay();
