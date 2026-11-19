@@ -157,13 +157,23 @@ public class SettingsActivity extends Activity {
     }
 
     private boolean accessibilityEnabled() {
+        // Le getId() Android est normalement sous forme abrégée (/.Service).
+        // Comparer une identité de ComponentName, pas deux formats de chaînes.
+        ComponentName target=new ComponentName(this,NeonLockAccessibilityService.class);
         try {
+            String configured=Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+            if(configured!=null){
+                for(String raw:configured.split(":")){
+                    if(target.equals(ComponentName.unflattenFromString(raw)))return true;
+                }
+            }
             AccessibilityManager am=(AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE);
-            String id=new ComponentName(this,NeonLockAccessibilityService.class).flattenToString();
             if(am!=null){
                 for(AccessibilityServiceInfo info:am.getEnabledAccessibilityServiceList(
                     AccessibilityServiceInfo.FEEDBACK_ALL_MASK)){
-                    if(id.equals(info.getId()))return true;
+                    if(target.equals(ComponentName.unflattenFromString(info.getId())))
+                        return true;
                 }
             }
         }catch(Exception ignored){}
@@ -262,15 +272,22 @@ public class SettingsActivity extends Activity {
         }
         if(accessibilityStatus!=null){
             boolean enabled=accessibilityEnabled();
+            boolean connected=NeonLockAccessibilityService.isConnected();
             boolean selected=LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false);
-            String access=enabled?"Service Android autorisé ✓":"Service Android non autorisé";
+            String access=!enabled?"Service d'accessibilité Android désactivé":
+                connected?"Service Android connecté ✓":
+                "Service activé dans Android mais non connecté !";
+            if(enabled && !connected)
+                access+="\nDésactive puis réactive le service dans Accessibilité.";
+            if(connected && !NeonLockAccessibilityService.getLastIssue().isEmpty())
+                access+="\n"+NeonLockAccessibilityService.getLastIssue();
             String pin=MainActivity.Credentials.length(this)>0?"Code visuel disponible":"Code visuel à configurer";
             KeyguardManager km=(KeyguardManager)getSystemService(KEYGUARD_SERVICE);
             boolean secure=km!=null && km.isDeviceSecure();
             accessibilityStatus.setText(access+"\n"+pin+
                 "\nMode automatique : "+(selected?"activé":"désactivé")+
                 "\nPIN/schéma/mot de passe Android : "+(secure?"configuré":"non configuré"));
-            accessibilityStatus.setTextColor(enabled&&selected&&MainActivity.Credentials.length(this)>0
+            accessibilityStatus.setTextColor(connected&&selected&&MainActivity.Credentials.length(this)>0
                 ?MainActivity.GREEN:MainActivity.MUTED);
         }
     }
