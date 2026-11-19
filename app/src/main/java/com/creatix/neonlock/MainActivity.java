@@ -90,10 +90,10 @@ public final class MainActivity extends Activity {
         TextView mark=text(this,"CR3@TIX / ANDROID",12,GREEN,true);
         mark.setLetterSpacing(.2f);
         add(content,mark,this,0);
-        TextView title=text(this,"NEON CLOCK",32,WHITE,true);
+        TextView title=text(this,"NEON LOCK",32,WHITE,true);
         title.setLetterSpacing(.09f);
         add(content,title,this,12);
-        add(content,text(this,"Fond animé • secondes 0 à 6 • heure centrale",15,MUTED,false),this,8);
+        add(content,text(this,"Cadran coffre-fort animé • roue 0 à 6 • heure centrale",15,MUTED,false),this,8);
         preview=new ClockView(this,true);
         LinearLayout.LayoutParams frame=new LinearLayout.LayoutParams(-1,dp(this,340));
         frame.topMargin=dp(this,12);
@@ -114,8 +114,9 @@ public final class MainActivity extends Activity {
         });
         add(content,androidLock,this,8);
         add(content,text(this,
-            "La roue n'est plus un code : elle parcourt six segments de 10 secondes. "+
-            "Le petit compteur indique les secondes restantes avant la minute suivante. "+
+            "La roue de coffre-fort effectue un tour toutes les 60 secondes. "+
+            "Les chiffres 0 à 6 tournent sous la flèche orange et un compteur "+
+            "affiche les secondes restantes avant la minute suivante. "+
             "Le balayage et le verrouillage éventuel restent ceux d'Android ; "+
             "cette application n'y demande aucun accès.",13,MUTED,false),this,16);
         setContentView(scroll);
@@ -145,7 +146,7 @@ public final class MainActivity extends Activity {
             @Override public void run(){
                 if(!attached)return;
                 invalidate();
-                timer.postDelayed(this,200);
+                timer.postDelayed(this,33);
             }
         };
         private final boolean preview;
@@ -371,7 +372,7 @@ public final class MainActivity extends Activity {
                         catch(Exception ignored){}
                     }
                 }
-                if(visible)timer.postDelayed(redraw,200);
+                if(visible)timer.postDelayed(redraw,33);
             }
         }
     }
