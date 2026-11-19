@@ -102,6 +102,12 @@ public final class ThemeSettingsActivity extends Activity {
                 preview.invalidate();
             });
 
+        section("ÉCONOMIE DE BATTERIE");
+        addToggle("Mode économie (15 images/seconde)",
+            ThemePrefs.batterySaver(this),checked->{
+                ThemePrefs.setBatterySaver(this,checked);
+            });
+
         section("CHANGEMENT AUTOMATIQUE DES THÈMES");
         addToggle("Changer de thème automatiquement",
             ThemePrefs.autoChange(this),checked->{
