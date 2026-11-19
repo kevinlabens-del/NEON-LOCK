@@ -15,6 +15,9 @@ public final class LockPrefs {
     public static final String NUMBER_COLOR="number_color";
     public static final String CLOCK_COLOR="clock_color";
     public static final String DIAL_VERTICAL="dial_vertical_percent";
+    public static final String NEON_INTENSITY="neon_intensity";
+    public static final String REVERSE_ROTATION="reverse_rotation";
+    public static final String SHOW_COUNTDOWN="show_countdown";
     private LockPrefs(){}
 
     public static SharedPreferences prefs(Context context) {
@@ -31,15 +34,21 @@ public final class LockPrefs {
             p.getInt(RING_COLOR,Color.rgb(255,171,43)),
             p.getInt(NUMBER_COLOR,Color.rgb(167,183,205)),
             p.getInt(CLOCK_COLOR,Color.rgb(232,241,254)),
-            Math.max(40,Math.min(75,p.getInt(DIAL_VERTICAL,69)))
+            Math.max(40,Math.min(75,p.getInt(DIAL_VERTICAL,69))),
+            Math.max(40,Math.min(245,p.getInt(NEON_INTENSITY,150))),
+            p.getBoolean(REVERSE_ROTATION,false),
+            p.getBoolean(SHOW_COUNTDOWN,true)
         );
     }
 
     public static final class Style {
         public final boolean showTitle,showDate;
         public final int titleColor,dateColor,ringColor,numberColor,clockColor,verticalPercent;
+        public final int neonIntensity;
+        public final boolean reverseRotation,showCountdown;
         public Style(boolean title,boolean date,int titleColor,int dateColor,
-                     int ringColor,int numberColor,int clockColor,int verticalPercent) {
+                     int ringColor,int numberColor,int clockColor,int verticalPercent,
+                     int neonIntensity,boolean reverseRotation,boolean showCountdown) {
             this.showTitle=title;this.showDate=date;
             this.titleColor=titleColor;this.dateColor=dateColor;
             this.ringColor=ringColor;this.numberColor=numberColor;
