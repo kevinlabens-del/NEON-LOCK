@@ -1,21 +1,26 @@
-# NEON CLOCK — v0.9.0
+# NEON LOCK v1.0.0 — Cadran coffre-fort animé
 
-Application Android native de **fond d'écran animé** issue de NEON LOCK.
+Fond d'écran animé Android, sans root et sans fonction de verrouillage propriétaire.
 
-## Fonctionnement
-- Le cadran **0 à 6** représente six périodes de **10 secondes**, soit une minute complète.
-- Un repère orange se déplace régulièrement sur l'arc durant 60 secondes.
-- L'heure **HH:mm** reste au centre du cadran.
-- Le texte inférieur indique les secondes restantes avant la minute suivante.
-- Options : couleurs du titre, arc, graduations, heure ; affichage du titre/date ; position verticale.
-- Le fond est animé tant qu'il est visible, et stoppe les mises à jour en arrière-plan.
+## Design — retour à la v0.5.0
+- Même base graphique que le coffre-fort original v0.5.0 : fond bleu/noir dégradé, métal radial, anneaux de précision, doubles arcs orange, triangle orange fixe en haut et heure dans le moyeu central.
+- Chiffres **0 1 2 3 4 5 6** sur la roue mobile, à la place de 0–9.
+- La **roue métallique tourne continûment** : un tour par minute, synchronisée avec l'horloge du téléphone.
+- **Décompte 60 à 01 secondes** en orange sous l'heure HH:mm au centre.
+- Animation à 30 images/s lorsque le fond est visible, arrêt des rappels lorsque le fond n'est plus visible.
 
-## Sécurité et écran de verrouillage
-**NEON CLOCK n'est plus un écran de déverrouillage.** Les anciens champs PIN visuel, contrôles d'accès, fenêtres superposées et le service d'accessibilité ont été supprimés de la compilation et du manifeste. Aucune autorisation d'accessibilité n'est requise.
+## Paramètres du fond animé conservés
+- Afficher ou masquer « NEON LOCK » et la date.
+- Personnaliser indépendamment les couleurs du titre, de la date, des arcs, des chiffres et de l'heure.
+- Ajuster la position verticale du cadran (40 à 75 %, 69 % par défaut).
+- Bouton de réinitialisation du thème.
+- Prévisualisation dans l'application, et bouton d'application du fond animé Android.
 
-Le verrouillage d'écran Android (PIN, schéma, biométrie ou balayage) reste configuré **uniquement par l'utilisateur dans les paramètres de son téléphone** ; l'application ne le désactive pas. Sur certains appareils, choisir le fond animé pour « accueil et verrouillage » dépend de l'interface constructeur. Le balayage est celui d'Android, pas un geste intercepté par NEON CLOCK.
+## Sécurité
+- Aucun code NEON, aucune superposition sur l'écran sécurisé, aucun service d'accessibilité.
+- Le balayage et la désactivation éventuelle du verrouillage Android ne sont **pas** contrôlés par cette application.
+- Pour afficher le fond sur l'écran de verrouillage, choisir l'option Android « écran d'accueil et écran verrouillé » lorsqu'elle est proposée par le constructeur.
+- La compilation réussie ne garantit pas l'acceptation par Play Protect ni le rendu identique sur tous les firmwares HyperOS.
 
-## APK
-GitHub Actions compile **NEON-LOCK-v0.9.0.apk**, signée avec la clé Android de débogage fournie par l'environnement de compilation. Ne pas considérer un build réussi comme une validation matérielle sur HyperOS.
-
-Le nouveau projet ne demande plus `BIND_ACCESSIBILITY_SERVICE` : cela réduit le risque de blocage Play Protect lié aux services d'accessibilité, **sans garantir** qu'une installation hors Play Store ne déclenche aucun avertissement.
+## Build
+GitHub Actions assemble et publie `NEON-LOCK-v1.0.0.apk` dans Releases. APK de test signée avec une clé de débogage.
