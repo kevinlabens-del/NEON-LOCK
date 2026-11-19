@@ -32,7 +32,7 @@ public final class LockPrefs {
             p.getInt(TITLE_COLOR,Color.rgb(43,255,179)),
             p.getInt(DATE_COLOR,Color.rgb(178,199,227)),
             p.getInt(RING_COLOR,Color.rgb(255,171,43)),
-            p.getInt(NUMBER_COLOR,Color.rgb(167,183,205)),
+            p.getInt(NUMBER_COLOR,Color.rgb(255,237,215)),
             p.getInt(CLOCK_COLOR,Color.rgb(232,241,254)),
             Math.max(40,Math.min(75,p.getInt(DIAL_VERTICAL,69))),
             Math.max(40,Math.min(245,p.getInt(NEON_INTENSITY,150))),

@@ -1,10 +1,10 @@
-# NEON LOCK v1.2.0 — molette coffre-fort 3D personnalisable
+# NEON LOCK v1.2.1 — chiffres lisibles pendant la rotation 3D
 
 Cette édition intègre **l'image fournie par l'utilisateur** dans le dossier Android `drawable-nodpi/neon_vault_reference.jpg` et respecte son identité : **une seule molette ronde**, sans porte de coffre-fort, charnières ou décor rectangulaire.
 
 ## Fond animé photographique
 - Image 3D d'origine comme texture (métal brossé chromé, reflets bleus, néon orange, véritable relief visuel).
-- Le cercle comportant les chiffres **0 1 2 3 4 5 6** est découpé virtuellement dans la même image et **tourne indépendamment** de la bordure métallique et du repère orange fixe.
+- La molette métallique est découpée virtuellement dans la photo d'origine, **sans les anciens chiffres pré-imprimés**. Une nouvelle texture intérieure `neon_vault_wheel_clean.jpg` préserve le relief du métal. Les **sept chiffres 0 1 2 3 4 5 6** sont placés à leurs positions tournantes puis rendus séparément **sans rotation des glyphes**, donc toujours droits et lisibles, y compris après un demi-tour.
 - La bague mobile tourne continûment en une minute, synchronisée avec les secondes réelles de l'appareil.
 - L'inscription statique « 15:56:24 » de l'image est remplacée à l'affichage par une **heure HH:mm:ss dynamique**. Les secondes s'illuminent en orange ou dans la couleur choisie.
 - Décompte des secondes restantes facultatif sous l'horloge.
@@ -21,4 +21,4 @@ Cette édition intègre **l'image fournie par l'utilisateur** dans le dossier An
 ## Sécurité et installation
 L'application demeure un **simple fond d'écran animé** : aucun PIN NEON, aucune autorisation d'accessibilité, aucune interception des gestes ni du verrouillage Android. Le verrouillage et le balayage sont gérés séparément par le téléphone.
 
-GitHub Actions assemble l'APK `NEON-LOCK-v1.2.0.apk` (signature debug). Le build ne prouve pas un fonctionnement parfait sur tous les modèles HyperOS. Si Android autorise le fond animé sur l'écran de verrouillage, activer l'option « écran d'accueil et écran verrouillé ».
+GitHub Actions assemble l'APK `NEON-LOCK-v1.2.1.apk` (signature debug). Le build ne prouve pas un fonctionnement parfait sur tous les modèles HyperOS. Si Android autorise le fond animé sur l'écran de verrouillage, activer l'option « écran d'accueil et écran verrouillé ».

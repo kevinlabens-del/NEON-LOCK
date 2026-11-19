@@ -115,7 +115,7 @@ public final class MainActivity extends Activity {
         add(content,androidLock,this,8);
         add(content,text(this,
             "La molette 3D utilise ton visuel original : elle tourne en 60 secondes. "+
-            "Les chiffres 0 à 6 tournent sous le triangle orange, avec "+
+            "Les chiffres 0 à 6 tournent tout en restant droits, avec "+
             "la vraie heure et les secondes en temps réel au centre. "+
             "Le balayage et le verrouillage éventuel restent ceux d'Android ; "+
             "cette application n'y demande aucun accès.",13,MUTED,false),this,16);

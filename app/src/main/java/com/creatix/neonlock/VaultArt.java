@@ -28,6 +28,54 @@ final class VaultArt {
     private static Bitmap recolored;
     private static int recoloredAccent=0;
     private VaultArt(){}
+    private static Bitmap wheelSource;
+    private static Bitmap wheelTinted;
+    private static int wheelTintedAccent=0;
+
+    /**
+     * Digit-free version of the exact source photo. Only this inner wheel
+     * rotates. Numerals are drawn upright by Canvas after rotation is restored.
+     */
+    private static synchronized Bitmap getWheelArt(Context context,int accent){
+        if(wheelSource==null){
+            BitmapFactory.Options opts=new BitmapFactory.Options();
+            opts.inScaled=false;
+            wheelSource=BitmapFactory.decodeResource(context.getResources(),
+                R.drawable.neon_vault_wheel_clean,opts);
+        }
+        if(wheelSource==null)return null;
+        if(accent==MainActivity.ORANGE)return wheelSource;
+        if(wheelTinted!=null && wheelTintedAccent==accent)return wheelTinted;
+
+        int w=wheelSource.getWidth(),h=wheelSource.getHeight();
+        int[] pixels=new int[w*h];
+        wheelSource.getPixels(pixels,0,w,0,0,w,h);
+        int nr=Color.red(accent),ng=Color.green(accent),nb=Color.blue(accent);
+        for(int i=0;i<pixels.length;i++){
+            int rgb=pixels[i];
+            int a=Color.alpha(rgb),r=Color.red(rgb);
+            int g=Color.green(rgb),b=Color.blue(rgb);
+            if(r>73 && g>24 && r>g*1.18f && g>b*1.24f && r-b>52){
+                float strength=Math.min(1f,Math.max(0f,(r-g-12f)/65f));
+                float light=Math.min(1f,(r+g*.33f)/280f);
+                float white=Math.max(0f,Math.min(1f,(g-110f)/170f));
+                int tr=Math.min(255,Math.round(nr*light+white*80f));
+                int tg=Math.min(255,Math.round(ng*light+white*80f));
+                int tb=Math.min(255,Math.round(nb*light+white*80f));
+                r=Math.min(255,Math.max(0,Math.round(r*(1f-strength)+tr*strength)));
+                g=Math.min(255,Math.max(0,Math.round(g*(1f-strength)+tg*strength)));
+                b=Math.min(255,Math.max(0,Math.round(b*(1f-strength)+tb*strength)));
+                pixels[i]=Color.argb(a,r,g,b);
+            }
+        }
+        Bitmap result=Bitmap.createBitmap(pixels,w,h,Bitmap.Config.ARGB_8888);
+        if(wheelTinted!=null && !wheelTinted.isRecycled())wheelTinted.recycle();
+        wheelTinted=result;
+        wheelTintedAccent=accent;
+        return result;
+    }
+
+
 
     private static synchronized Bitmap getArt(Context context,int accent){
         if(source==null){
@@ -97,7 +145,8 @@ final class VaultArt {
         if(width<=0||height<=0)return;
         LockPrefs.Style style=LockPrefs.get(context);
         Bitmap img=getArt(context,style.ringColor);
-        if(img==null){
+        Bitmap wheelImage=getWheelArt(context,style.ringColor);
+        if(img==null || wheelImage==null){
             canvas.drawColor(MainActivity.BG);
             return;
         }
@@ -148,8 +197,8 @@ final class VaultArt {
         drawOriginal(canvas,p,img,src,dst);
         canvas.restore();
 
-        // Precisely cut the numbered ring from the same photo.
-        // Only the inner annulus rotates; all the metal outside stays fixed.
+        // A separate digit-free metal photo rotates underneath its upright numerals.
+        // The reference artwork (including the triangular pointer) stays stationary.
         Calendar now=Calendar.getInstance();
         float elapsed=now.get(Calendar.SECOND)
             +now.get(Calendar.MILLISECOND)/1000f;
@@ -157,11 +206,11 @@ final class VaultArt {
         canvas.save();
         Path annulus=new Path();
         annulus.setFillType(Path.FillType.EVEN_ODD);
-        annulus.addCircle(cx,cy,r*.865f,Path.Direction.CW);
-        annulus.addCircle(cx,cy,r*.485f,Path.Direction.CW);
+        annulus.addCircle(cx,cy,r*.800f,Path.Direction.CW);
+        annulus.addCircle(cx,cy,r*.488f,Path.Direction.CW);
         canvas.clipPath(annulus);
         canvas.rotate(wheelAngle,cx,cy);
-        drawOriginal(canvas,p,img,src,dst);
+        drawOriginal(canvas,p,wheelImage,src,dst);
         canvas.restore();
 
         // Subtle machining rings mask the seam between moving and fixed parts.
@@ -177,6 +226,36 @@ final class VaultArt {
             Color.green(accent),Color.blue(accent)));
         canvas.drawArc(new RectF(cx-r*.915f,cy-r*.915f,
             cx+r*.915f,cy+r*.915f),25f,120f,false,p);
+        p.setStyle(Paint.Style.FILL);
+
+        // Draw seven numbers individually after restoring the canvas.
+        // Only their POSITIONS rotate; the glyphs always remain vertical.
+        // This also prevents upside-down digits seen in the user's video.
+        p.setShader(null);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
+        p.setStrokeJoin(Paint.Join.ROUND);
+        p.setTextSize(r*.145f);
+        Paint.FontMetrics fm=p.getFontMetrics();
+        for(int digit=0;digit<=6;digit++){
+            float angleDeg=digit*(360f/7f)-90f+wheelAngle;
+            float angle=(float)Math.toRadians(angleDeg);
+            float nx=cx+(float)Math.cos(angle)*r*.615f;
+            float ny=cy+(float)Math.sin(angle)*r*.615f;
+            float baseline=ny-(fm.ascent+fm.descent)*.5f;
+            // An orange outline and glow retain the original neon style.
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(r*.014f);
+            p.setColor(accent);
+            p.setShadowLayer(r*.022f,0,0,accent);
+            canvas.drawText(Integer.toString(digit),nx,baseline,p);
+            p.clearShadowLayer();
+            p.setStyle(Paint.Style.FILL);
+            p.setColor(style.numberColor);
+            p.setShadowLayer(r*.010f,0,0,accent);
+            canvas.drawText(Integer.toString(digit),nx,baseline,p);
+            p.clearShadowLayer();
+        }
         p.setStyle(Paint.Style.FILL);
 
         // The artwork has a frozen "15:56:24" painted into it.
