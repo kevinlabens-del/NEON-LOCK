@@ -41,8 +41,8 @@ public final class SettingsActivity extends Activity {
         content.setPadding(MainActivity.dp(this,20),MainActivity.dp(this,24),
             MainActivity.dp(this,20),MainActivity.dp(this,28));
         scroll.addView(content);
-        MainActivity.add(content,label("PERSONNALISATION COFFRE-FORT",24,MainActivity.WHITE,true),this,0);
-        MainActivity.add(content,label("Porte blindée, boulons, charnières et molette en acier. Le cadran 0–6 tourne en 60 secondes, avec l'heure au centre.",
+        MainActivity.add(content,label("PERSONNALISATION 3D",26,MainActivity.WHITE,true),this,0);
+        MainActivity.add(content,label("Ton visuel 3D original, sans porte autour : une molette métallique 0–6 qui tourne sous le repère fixe. Heure et secondes en direct.",
             14,MainActivity.MUTED,false),this,6);
         preview=new MainActivity.ClockView(this,true);
         LinearLayout.LayoutParams previewLp=new LinearLayout.LayoutParams(-1,MainActivity.dp(this,325));
@@ -58,8 +58,36 @@ public final class SettingsActivity extends Activity {
         chooseColor("Couleur du titre",LockPrefs.TITLE_COLOR);
         chooseColor("Couleur de la date",LockPrefs.DATE_COLOR);
         chooseColor("Éclairage néon des arcs et du repère",LockPrefs.RING_COLOR);
-        chooseColor("Couleur des chiffres métalliques",LockPrefs.NUMBER_COLOR);
-        chooseColor("Couleur de l'heure",LockPrefs.CLOCK_COLOR);
+        chooseColor("Couleur des chiffres numériques",LockPrefs.NUMBER_COLOR);
+        chooseColor("Couleur de l'heure au centre",LockPrefs.CLOCK_COLOR);
+        section("ANIMATION ET ÉCLAIRAGE");
+        toggle("Tourner dans l'autre sens",LockPrefs.REVERSE_ROTATION,
+            LockPrefs.get(this).reverseRotation);
+        toggle("Afficher les secondes restantes",LockPrefs.SHOW_COUNTDOWN,
+            LockPrefs.get(this).showCountdown);
+        TextView glowLevel=label("Puissance néon : "+LockPrefs.get(this).neonIntensity,15,
+            MainActivity.WHITE,true);
+        MainActivity.add(content,glowLevel,this,10);
+        SeekBar neon=new SeekBar(this);
+        neon.setMax(205);
+        neon.setProgress(LockPrefs.get(this).neonIntensity-40);
+        neon.setProgressTintList(ColorStateList.valueOf(MainActivity.ORANGE));
+        neon.setThumbTintList(ColorStateList.valueOf(MainActivity.ORANGE));
+        MainActivity.add(content,neon,this,5);
+        neon.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override public void onProgressChanged(SeekBar bar,int progress,boolean fromUser){
+                if(!fromUser)return;
+                int value=40+progress;
+                LockPrefs.prefs(SettingsActivity.this).edit()
+                    .putInt(LockPrefs.NEON_INTENSITY,value).apply();
+                glowLevel.setText("Puissance néon : "+value);
+                refresh();
+            }
+            @Override public void onStartTrackingTouch(SeekBar bar){}
+            @Override public void onStopTrackingTouch(SeekBar bar){}
+        });
+        MainActivity.add(content,label("L'éclairage et les chiffres sont personnalisables, " +
+            "la texture métallique 3D reste intacte.",13,MainActivity.MUTED,false),this,4);
         section("POSITION SUR L'ÉCRAN");
         positionText=label("",15,MainActivity.WHITE,true);
         MainActivity.add(content,positionText,this,6);
