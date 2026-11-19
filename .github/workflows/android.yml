@@ -25,6 +25,8 @@ jobs:
         run: gradle :app:assembleDebug --no-daemon --stacktrace
       - name: Verify APK file
         run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify 3D dial graphic included in APK
+        run: unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_reference'
       - name: Publish APK as artifact
         uses: actions/upload-artifact@v4
         with:
