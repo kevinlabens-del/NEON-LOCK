@@ -26,7 +26,7 @@ jobs:
       - name: Verify APK file
         run: test -s app/build/outputs/apk/debug/app-debug.apk
       - name: Verify 3D dial graphic included in APK
-        run: unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_reference'
+        run: unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_reference' && unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -q 'neon_vault_wheel_clean'
       - name: Publish APK as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -34,10 +34,10 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Prepare APK name
-        run: cp app/build/outputs/apk/debug/app-debug.apk NEON-LOCK-v1.2.0.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk NEON-LOCK-v1.2.1.apk
       - name: Create/update download release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view v1.2.0 >/dev/null 2>&1 || gh release create v1.2.0 --title "NEON LOCK v1.2.0" --notes "APK Android de test signée (debug). Intègre le visuel 3D fourni par l'utilisateur comme texture originale du fond animé : molette seule, cercle de chiffres tournant 0 à 6, horloge dynamique, réglages de couleurs et animation. Sans accès sensible. Ne remplace pas le verrouillage sécurisé Android."
-          gh release upload v1.2.0 NEON-LOCK-v1.2.0.apk --clobber
+          gh release view v1.2.1 >/dev/null 2>&1 || gh release create v1.2.1 --title "NEON LOCK v1.2.1" --notes "APK Android de test signée (debug). Corrige la rotation 3D : les chiffres 0 à 6 restent droits et lisibles pendant le mouvement de la roue métallique. Horloge et personnalisation conservées. Sans accès sensible. Ne remplace pas le verrouillage sécurisé Android."
+          gh release upload v1.2.1 NEON-LOCK-v1.2.1.apk --clobber
