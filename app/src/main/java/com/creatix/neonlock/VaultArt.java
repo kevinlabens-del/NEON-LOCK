@@ -142,6 +142,11 @@ final class VaultArt {
     }
 
     static void draw(Canvas canvas,int width,int height,Context context,boolean preview){
+        draw(canvas,width,height,context,preview,
+            ThemePrefs.vertical(context,ThemePrefs.VAULT)/100f,.5f);
+    }
+    static void draw(Canvas canvas,int width,int height,Context context,boolean preview,
+                     float verticalFraction,float xOffset){
         if(width<=0||height<=0)return;
         LockPrefs.Style style=LockPrefs.get(context);
         int selectedAccent=ThemePrefs.prefs(context).contains("t0_accent")?
@@ -154,7 +159,7 @@ final class VaultArt {
         }
         final float w=width,h=height;
         final float cx=w*.5f;
-        final float cy=h*(preview?.51f:ThemePrefs.vertical(context,ThemePrefs.VAULT)/100f);
+        final float cy=h*(preview?.51f:ThemeMath.clamp(verticalFraction,.35f,.80f));
         float r=Math.min(w*.475f,h*(preview?.43f:.27f))*
             ThemePrefs.size(context,ThemePrefs.VAULT)/100f;
         r=Math.min(r,Math.min(cy*.97f,(h-cy)*.96f));
@@ -192,7 +197,9 @@ final class VaultArt {
         int sy=Math.round(img.getHeight()*.485f-side*.5f);
         sy=Math.max(0,Math.min(img.getHeight()-side,sy));
         Rect src=new Rect(sx,sy,sx+side,sy+side);
-        RectF dst=new RectF(cx-r,cy-r,cx+r,cy+r);
+        float parallax=ThemePrefs.parallaxEnabled(context)?
+            ThemeMath.parallax(xOffset,r*.012f):0f;
+        RectF dst=new RectF(cx-r+parallax,cy-r,cx+r+parallax,cy+r);
 
         // Static external steel rim and orange triangular pointer.
         canvas.save();
