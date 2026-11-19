@@ -328,7 +328,7 @@ public class MainActivity extends Activity {
         private static final long SETTLE_DELAY_MS=450L;
         private final Handler settleHandler=new Handler(Looper.getMainLooper());
         private final Runnable confirmDigit=()->{
-            if(interactive && listener!=null && state==0 && isAttachedToWindow()){
+            if(listener!=null && state==0 && isAttachedToWindow()){
                 performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);
                 listener.accept(selected());
             }
