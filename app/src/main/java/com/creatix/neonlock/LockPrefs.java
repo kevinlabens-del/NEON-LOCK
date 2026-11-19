@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 
-/** All style preferences are distinct from the visual PIN storage. */
+/** Decorative live-wallpaper preferences only; no PIN or lock service. */
 public final class LockPrefs {
     public static final String PREFS="neon_lock_style";
     public static final String SHOW_TITLE="show_title";
@@ -15,9 +15,6 @@ public final class LockPrefs {
     public static final String NUMBER_COLOR="number_color";
     public static final String CLOCK_COLOR="clock_color";
     public static final String DIAL_VERTICAL="dial_vertical_percent";
-    public static final String AUTO_DIAL="auto_dial_on_wake";
-    public static final String SWIPE_FIRST="swipe_to_show_dial";
-    public static final String NATIVE_UNLOCK_AFTER_NEON="native_unlock_after_neon";
     private LockPrefs(){}
 
     public static SharedPreferences prefs(Context context) {
@@ -34,7 +31,7 @@ public final class LockPrefs {
             p.getInt(RING_COLOR,Color.rgb(255,171,43)),
             p.getInt(NUMBER_COLOR,Color.rgb(167,183,205)),
             p.getInt(CLOCK_COLOR,Color.rgb(232,241,254)),
-            Math.max(58,Math.min(75,p.getInt(DIAL_VERTICAL,69)))
+            Math.max(40,Math.min(75,p.getInt(DIAL_VERTICAL,62)))
         );
     }
 
