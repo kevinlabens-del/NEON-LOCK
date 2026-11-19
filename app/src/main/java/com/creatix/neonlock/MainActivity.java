@@ -293,11 +293,11 @@ public final class MainActivity extends Activity {
                 new float[]{0f,.32f,.66f,1f},Shader.TileMode.CLAMP));
             canvas.drawRoundRect(door,r*.16f,r*.16f,p);p.setShader(null);
 
-            RectF inner=new RectF(cx-r*1.37f,cy-r*1.56f,
+            RectF doorInset=new RectF(cx-r*1.37f,cy-r*1.56f,
                 cx+r*1.37f,cy+r*1.56f);
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(r*.030f);p.setColor(Color.rgb(7,12,23));
-            canvas.drawRoundRect(inner,r*.13f,r*.13f,p);
+            canvas.drawRoundRect(doorInset,r*.13f,r*.13f,p);
             p.setStrokeWidth(r*.010f);p.setColor(Color.rgb(128,147,166));
             canvas.drawRoundRect(new RectF(cx-r*1.325f,cy-r*1.505f,
                 cx+r*1.325f,cy+r*1.505f),r*.10f,r*.10f,p);
