@@ -278,9 +278,9 @@ public class SettingsActivity extends Activity {
                 connected?"Service Android connecté ✓":
                 "Service activé dans Android mais non connecté !";
             if(enabled && !connected)
-                access+="\\nDésactive puis réactive le service dans Accessibilité.";
+                access+="\nDésactive puis réactive le service dans Accessibilité.";
             if(connected && !NeonLockAccessibilityService.getLastIssue().isEmpty())
-                access+="\\n"+NeonLockAccessibilityService.getLastIssue();
+                access+="\n"+NeonLockAccessibilityService.getLastIssue();
             String pin=MainActivity.Credentials.length(this)>0?"Code visuel disponible":"Code visuel à configurer";
             KeyguardManager km=(KeyguardManager)getSystemService(KEYGUARD_SERVICE);
             boolean secure=km!=null && km.isDeviceSecure();
