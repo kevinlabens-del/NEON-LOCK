@@ -142,10 +142,23 @@ final class VaultArt {
     }
 
     static void draw(Canvas canvas,int width,int height,Context context,boolean preview){
+        draw(canvas,width,height,context,preview,
+            ThemePrefs.vertical(context,ThemePrefs.VAULT)/100f,.5f);
+    }
+    static void draw(Canvas canvas,int width,int height,Context context,boolean preview,
+                     float verticalFraction,float xOffset){
         if(width<=0||height<=0)return;
         LockPrefs.Style style=LockPrefs.get(context);
         int selectedAccent=ThemePrefs.prefs(context).contains("t0_accent")?
             ThemePrefs.accent(context,ThemePrefs.VAULT):style.ringColor;
+        if(ThemePrefs.nightPalette(context,ThemePrefs.VAULT) &&
+           ThemeMath.isNight(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))){
+            int night=ThemePrefs.nightColor(context,ThemePrefs.VAULT);
+            selectedAccent=Color.rgb(
+                (Color.red(selectedAccent)+Color.red(night))/2,
+                (Color.green(selectedAccent)+Color.green(night))/2,
+                (Color.blue(selectedAccent)+Color.blue(night))/2);
+        }
         Bitmap img=getArt(context,selectedAccent);
         Bitmap wheelImage=getWheelArt(context,selectedAccent);
         if(img==null || wheelImage==null){
@@ -154,7 +167,7 @@ final class VaultArt {
         }
         final float w=width,h=height;
         final float cx=w*.5f;
-        final float cy=h*(preview?.51f:ThemePrefs.vertical(context,ThemePrefs.VAULT)/100f);
+        final float cy=h*(preview?.51f:ThemeMath.clamp(verticalFraction,.35f,.80f));
         float r=Math.min(w*.475f,h*(preview?.43f:.27f))*
             ThemePrefs.size(context,ThemePrefs.VAULT)/100f;
         r=Math.min(r,Math.min(cy*.97f,(h-cy)*.96f));
@@ -162,9 +175,12 @@ final class VaultArt {
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
         p.setDither(true);
         final int accent=selectedAccent;
-        final int glowAlpha=Math.max(40,Math.min(245,
-            ThemePrefs.prefs(context).contains("t0_glow")?
-                ThemePrefs.glow(context,ThemePrefs.VAULT):style.neonIntensity));
+        int currentGlow=ThemePrefs.prefs(context).contains("t0_glow")?
+            ThemePrefs.glow(context,ThemePrefs.VAULT):style.neonIntensity;
+        if(ThemePrefs.adaptive(context,ThemePrefs.VAULT) &&
+           ThemeMath.isNight(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)))
+            currentGlow=Math.round(currentGlow*.67f);
+        final int glowAlpha=Math.max(40,Math.min(245,currentGlow));
 
         // Cinematic black and midnight-blue wallpaper background.
         p.setShader(new LinearGradient(0,0,w,h,
@@ -192,7 +208,9 @@ final class VaultArt {
         int sy=Math.round(img.getHeight()*.485f-side*.5f);
         sy=Math.max(0,Math.min(img.getHeight()-side,sy));
         Rect src=new Rect(sx,sy,sx+side,sy+side);
-        RectF dst=new RectF(cx-r,cy-r,cx+r,cy+r);
+        float parallax=ThemePrefs.parallaxEnabled(context)?
+            ThemeMath.parallax(xOffset,r*.012f):0f;
+        RectF dst=new RectF(cx-r+parallax,cy-r,cx+r+parallax,cy+r);
 
         // Static external steel rim and orange triangular pointer.
         canvas.save();
@@ -241,7 +259,9 @@ final class VaultArt {
         // This also prevents upside-down digits seen in the user's video.
         p.setShader(null);
         p.setTextAlign(Paint.Align.CENTER);
-        p.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
+        int digitStyle=ThemePrefs.digitStyle(context,ThemePrefs.VAULT);
+        p.setTypeface(Typeface.create(digitStyle==1?"serif":
+            digitStyle==2?"monospace":"sans-serif-condensed",Typeface.BOLD));
         p.setStrokeJoin(Paint.Join.ROUND);
         p.setTextSize(r*.145f);
         Paint.FontMetrics fm=p.getFontMetrics();
@@ -266,11 +286,32 @@ final class VaultArt {
         }
         p.setStyle(Paint.Style.FILL);
 
+        // Subtle selectable material finish stays within the round metal bezel.
+        int material=ThemePrefs.material(context,ThemePrefs.VAULT);
+        if(material!=0){
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(r*.008f);
+            p.setColor(material==2?0xffefc386:
+                material==3?0xff34475b:0xffd8ecfa);
+            canvas.drawCircle(cx,cy,r*.940f,p);
+            p.setStyle(Paint.Style.FILL);
+        }
+
         // The supplied graphic has been retouched to remove its baked-in time.
         // Its central glass/steel face is the REAL BACKDROP; do not draw a
         // rectangle, rounded banner, dark mask, or border behind the digits.
         // Hours, minutes and seconds are placed directly onto the central round.
 
+        int centerStyle=ThemePrefs.centerStyle(context,ThemePrefs.VAULT);
+        if(centerStyle==1 || centerStyle==2){
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(r*.008f);
+            p.setColor(accent);
+            if(centerStyle==1)canvas.drawCircle(cx,cy+r*.06f,r*.37f,p);
+            else canvas.drawArc(new RectF(cx-r*.38f,cy-r*.32f,
+                cx+r*.38f,cy+r*.44f),210f,115f,false,p);
+            p.setStyle(Paint.Style.FILL);
+        }
         // Central circle shows ONLY hours and minutes (HH:mm).
         // Seconds remain available as wheel motion, not as central text.
         String time=String.format(Locale.getDefault(),"%02d:%02d",

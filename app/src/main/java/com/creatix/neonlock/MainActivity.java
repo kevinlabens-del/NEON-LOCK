@@ -23,6 +23,8 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.service.wallpaper.WallpaperService;
 import android.view.Gravity;
@@ -225,11 +227,34 @@ public final class MainActivity extends Activity {
             private final Handler timer=new Handler(Looper.getMainLooper());
             private final Runnable redraw=this::drawNow;
             private boolean visible=false;
-            NeonEngine(){setTouchEventsEnabled(false);}
+            private float xOffset=.5f;
+            private long appearedAt=0L;
+            NeonEngine(){
+                setTouchEventsEnabled(false);
+                setOffsetNotificationsEnabled(true);
+            }
             @Override public void onVisibilityChanged(boolean shown){
                 visible=shown;
                 timer.removeCallbacks(redraw);
-                if(shown)drawNow();
+                if(shown){
+                    appearedAt=SystemClock.uptimeMillis();
+                    drawNow();
+                }
+            }
+            @Override public void onOffsetsChanged(float x,float y,
+                float xStep,float yStep,int pixelX,int pixelY){
+                xOffset=ThemeMath.clamp(x,0f,1f);
+                if(visible && ThemePrefs.parallaxEnabled(LiveWallpaper.this))
+                    drawNow();
+            }
+            @Override public void onWallpaperFlagsChanged(int which){
+                if(android.os.Build.VERSION.SDK_INT>=34 && visible)drawNow();
+            }
+            private boolean lockOnly(){
+                if(android.os.Build.VERSION.SDK_INT<34)return false;
+                int flags=getWallpaperFlags();
+                return (flags & WallpaperManager.FLAG_LOCK)!=0 &&
+                    (flags & WallpaperManager.FLAG_SYSTEM)==0;
             }
             @Override public void onSurfaceChanged(SurfaceHolder holder,
                     int format,int width,int height){
@@ -251,8 +276,15 @@ public final class MainActivity extends Activity {
                 Canvas canvas=null;
                 try {
                     canvas=getSurfaceHolder().lockCanvas();
-                    if(canvas!=null)ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
-                        LiveWallpaper.this,false);
+                    if(canvas!=null){
+                        float entrance=ThemePrefs.startupEnabled(LiveWallpaper.this)?
+                            ThemeMath.clamp((SystemClock.uptimeMillis()-appearedAt)/1650f,
+                                0f,1f):1f;
+                        ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
+                            LiveWallpaper.this,false,
+                            ThemePrefs.active(LiveWallpaper.this),lockOnly(),
+                            xOffset,entrance);
+                    }
                 }catch(Exception ignored){
                     // A temporary wallpaper surface can disappear while turning off the screen.
                 }finally{
@@ -261,8 +293,12 @@ public final class MainActivity extends Activity {
                         catch(Exception ignored){}
                     }
                 }
-                if(visible)timer.postDelayed(redraw,
-                    ThemePrefs.batterySaver(LiveWallpaper.this)?66:33);
+                if(visible){
+                    PowerManager power=(PowerManager)getSystemService(POWER_SERVICE);
+                    boolean lowPower=power!=null && power.isPowerSaveMode();
+                    int fps=ThemePrefs.targetFps(LiveWallpaper.this,lowPower);
+                    timer.postDelayed(redraw,Math.max(33,1000/fps));
+                }
             }
         }
     }

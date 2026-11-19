@@ -28,21 +28,37 @@ final class ThemeArt {
         draw(c,w,h,context,preview,ThemePrefs.active(context));
     }
     static void draw(Canvas c,int w,int h,Context context,boolean preview,int id){
+        draw(c,w,h,context,preview,id,false,.5f,1f);
+    }
+    /**
+     * Wallpaper-specific context: lock and home can use different positions,
+     * xOffset provides touch-free home-screen parallax and entrance is 0..1.
+     */
+    static void draw(Canvas c,int w,int h,Context context,boolean preview,
+                     int id,boolean lockScreen,float xOffset,float entrance){
         if(w<=0||h<=0)return;
         id=ThemePrefs.safe(id);
+        entrance=ThemeMath.clamp(entrance,0f,1f);
+        float entry=ThemeMath.easeOut(entrance);
         if(id==ThemePrefs.VAULT){
-            VaultArt.draw(c,w,h,context,preview);
+            c.save();
+            // Original picture is never replaced or stretched into other themes.
+            VaultArt.draw(c,w,h,context,preview,
+                ThemePrefs.verticalForScreen(context,id,lockScreen)/100f,xOffset);
+            if(entrance<1f)drawEntryPulse(c,w,h,context,id,entry);
+            c.restore();
             return;
         }
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
         p.setDither(true);
         float x=w*.5f;
-        float y=h*(preview?.51f:ThemePrefs.vertical(context,id)/100f);
+        float y=h*(preview?.51f:
+            ThemePrefs.verticalForScreen(context,id,lockScreen)/100f);
         float scale=ThemePrefs.size(context,id)/100f;
         float r=Math.min(w*.45f,h*(preview?.405f:.255f))*scale;
         r=Math.min(r,Math.min(y*.94f,(h-y)*.92f));
         if(r<8f)return;
-        int accent=ThemePrefs.accent(context,id);
+        int accent=ThemePrefs.effectiveAccent(context,id);
         float glow=ThemePrefs.glowFactor(context,id);
         float time=(System.currentTimeMillis()%60000L)/1000f;
         float spin=time*6f*(ThemePrefs.reverse(context,id)?-1f:1f)
@@ -54,19 +70,33 @@ final class ThemeArt {
         if(id==ThemePrefs.GALAXY)dark=0xff0b061a;
         if(id==ThemePrefs.ARC)dark=0xff050c18;
 
-        drawBackground(c,p,w,h,x,y,r,dark,accent,glow,id);
-        switch(id){
-            case ThemePrefs.CYBER: cyber(c,p,x,y,r,accent,spin,glow);break;
-            case ThemePrefs.GOLD: gold(c,p,x,y,r,accent,spin,glow);break;
-            case ThemePrefs.RED: red(c,p,x,y,r,accent,spin,glow);break;
-            case ThemePrefs.STEAMPUNK: steampunk(c,p,x,y,r,accent,spin,glow);break;
-            case ThemePrefs.GALAXY: galaxy(c,p,x,y,r,accent,spin,glow);break;
-            case ThemePrefs.ARC: arcReactor(c,p,x,y,r,accent,spin,glow);break;
-            default:cyber(c,p,x,y,r,accent,spin,glow);
+        drawBackground(c,p,w,h,x,y,r,dark,accent,glow,id,xOffset);
+        c.save();
+        if(entry<1f)c.scale(.925f+.075f*entry,.925f+.075f*entry,x,y);
+        // New photorealistic materials. Procedural fallback remains if decode fails.
+        boolean textured=ThemeTexture.draw(c,p,context,x,y,r,id,
+            accent,spin,glow,ThemePrefs.parallaxEnabled(context)?xOffset:.5f,
+            System.currentTimeMillis()/1000f);
+        if(!textured){
+            switch(id){
+                case ThemePrefs.CYBER: cyber(c,p,x,y,r,accent,spin,glow);break;
+                case ThemePrefs.GOLD: gold(c,p,x,y,r,accent,spin,glow);break;
+                case ThemePrefs.RED: red(c,p,x,y,r,accent,spin,glow);break;
+                case ThemePrefs.STEAMPUNK: steampunk(c,p,x,y,r,accent,spin,glow);break;
+                case ThemePrefs.GALAXY: galaxy(c,p,x,y,r,accent,spin,glow);break;
+                case ThemePrefs.ARC: arcReactor(c,p,x,y,r,accent,spin,glow);break;
+                default:cyber(c,p,x,y,r,accent,spin,glow);
+            }
         }
-
-        // Clock is always painted last and never rotates, always HH:mm only.
-        drawClock(c,p,x,y,r,id,accent,glow);
+        // Always last: HH:mm only, independent of photo and moving digits.
+        drawClock(c,p,x,y,r,id,accent,glow,
+            ThemePrefs.centerStyle(context,id));
+        if(entry<1f){
+            float start=360f*entry-90f;
+            arcGlow(c,p,x,y,r*.88f,r*.007f,start,30f,
+                accent,(1f-entry)*glow);
+        }
+        c.restore();
         if(!preview){
             LockPrefs.Style user=LockPrefs.get(context);
             if(user.showTitle)
@@ -153,7 +183,8 @@ final class ThemeArt {
         p.setStyle(Paint.Style.FILL);
     }
     private static void drawBackground(Canvas c,Paint p,int w,int h,float x,float y,
-                                       float r,int dark,int accent,float glow,int id){
+                                       float r,int dark,int accent,float glow,int id,
+                                       float offset){
         p.setStyle(Paint.Style.FILL);
         p.setShader(new LinearGradient(0,0,w,h,new int[]{
             mix(dark,accent,.12f),dark,mix(dark,Color.BLACK,.50f),mix(dark,accent,.06f)
@@ -166,7 +197,8 @@ final class ThemeArt {
         // Sparse cinematic light flecks, deterministic and stable.
         for(int i=0;i<22;i++){
             float a=(i*37.53f+id*29.5f);
-            float px=(float)((Math.sin(a*.88)*.5+.5)*w);
+            float px=(float)((Math.sin(a*.88)*.5+.5)*w)+
+                ThemeMath.parallax(offset,r*.25f);
             float py=(float)((Math.cos(a*1.27)*.5+.5)*h);
             fillCircle(c,p,px,py,Math.max(.7f,r*.003f*(i%3+1)),
                 alpha(i%3==0?accent:Color.WHITE,.12f+(i%4)*.07f));
@@ -440,7 +472,19 @@ final class ThemeArt {
         dot(c,p,x,y,r*.055f,0xffdafbff,glow);
     }
     private static void drawClock(Canvas c,Paint p,float x,float y,float r,
-                                  int id,int accent,float glow){
+                                  int id,int accent,float glow,int centerStyle){
+        if(centerStyle==1){
+            stroke(c,p,x,y,r*.39f,r*.008f,
+                alpha(accent,.62f*glow));
+        }else if(centerStyle==2){
+            arcGlow(c,p,x,y,r*.37f,r*.008f,190f,145f,accent,.6f*glow);
+            p.setStrokeWidth(r*.004f);p.setStyle(Paint.Style.STROKE);
+            p.setColor(alpha(accent,.36f));
+            c.drawLine(x-r*.25f,y+r*.235f,x+r*.25f,y+r*.235f,p);
+            p.setStyle(Paint.Style.FILL);
+        }else if(centerStyle==3){
+            // Minimal face: no extra circular HUD graphics.
+        }
         Calendar now=Calendar.getInstance();
         String hhmm=String.format(Locale.getDefault(),"%02d:%02d",
             now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
@@ -455,6 +499,16 @@ final class ThemeArt {
         p.setShadowLayer(r*.025f,0,0,alpha(accent,.95f*glow));
         c.drawText(hhmm,x,baseline,p);
         p.clearShadowLayer();
+    }
+    private static void drawEntryPulse(Canvas c,int w,int h,Context context,
+                                       int id,float fraction){
+        int accent=ThemePrefs.effectiveAccent(context,id);
+        float x=w*.5f;
+        float y=h*(ThemePrefs.verticalForScreen(context,id,false)/100f);
+        float r=Math.min(w*.47f,h*.26f);
+        Paint p=new Paint(Paint.ANTI_ALIAS_FLAG);
+        arcGlow(c,p,x,y,r*.97f,r*.018f,-90f+fraction*360f,
+            125f,accent,1f-fraction);
     }
     private static void lettering(Canvas c,Paint p,String text,float x,float y,
                                   float size,int color,boolean bold){

@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import java.util.ArrayList;
 
 /** Launch screen: seven live-previews and a direct one-touch theme picker. */
@@ -45,7 +46,7 @@ public final class ThemeGalleryActivity extends Activity {
         TextView title=label("NEON LOCK",32,0xffedf6ff,true);
         title.setLetterSpacing(.07f);
         add(content,title,9);
-        TextView edition=label("7 THÈMES  •  FONDS ANIMÉS 3D",14,0xff92b8d5,true);
+        TextView edition=label("7 THÈMES  •  ULTRA 3D EDITION",14,0xff92b8d5,true);
         add(content,edition,2);
         activeTitle=label("",13,0xffc3d7e8,false);
         add(content,activeTitle,13);
@@ -65,6 +66,18 @@ public final class ThemeGalleryActivity extends Activity {
         personalize.setOnClickListener(v->startActivity(
             new Intent(this,ThemeSettingsActivity.class)));
         add(content,personalize,9);
+
+        Button designer=MainActivity.button(this,"✦  ATELIER 3D ET MES CRÉATIONS",
+            0xff26334d,0xfff4f8ff);
+        designer.setOnClickListener(v->startActivity(
+            new Intent(this,ThemeDesignerActivity.class)));
+        add(content,designer,9);
+
+        Button diagnostics=MainActivity.button(this,"◈  DIAGNOSTICS ET PERFORMANCES",
+            0xff172438,0xffb5d8eb);
+        diagnostics.setOnClickListener(v->startActivity(
+            new Intent(this,DiagnosticsActivity.class)));
+        add(content,diagnostics,9);
 
         Button updates=MainActivity.button(this,"↻  VÉRIFIER LES MISES À JOUR",
             0xff18263a,0xfff5fbff);
@@ -188,12 +201,15 @@ public final class ThemeGalleryActivity extends Activity {
     static final class ThemePreview extends View{
         private final int theme;
         private boolean attached;
+        private final Rect visibleRect=new Rect();
         private final Handler handler=new Handler(Looper.getMainLooper());
         private final Runnable tick=new Runnable(){
             @Override public void run(){
                 if(!attached)return;
-                invalidate();
-                handler.postDelayed(this,100);
+                // Never keep rendering thumbnails scrolled out of the viewport.
+                if(isShown() && getGlobalVisibleRect(visibleRect))invalidate();
+                handler.postDelayed(this,
+                    ThemePrefs.batterySaver(getContext())?250:125);
             }
         };
         ThemePreview(Context context,int index){super(context);theme=index;}

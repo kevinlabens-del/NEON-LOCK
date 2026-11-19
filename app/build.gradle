@@ -14,8 +14,8 @@ android {
         applicationId 'com.creatix.neonlock'
         minSdk 28
         targetSdk 35
-        versionCode 18
-        versionName '1.3.0'
+        versionCode 19
+        versionName '1.4.0'
     }
     signingConfigs {
         if (stableSigning) {
@@ -39,3 +39,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 }
+
+// Pure JVM regression checks do not depend on an emulator.
+dependencies { testImplementation 'junit:junit:4.13.2' }
