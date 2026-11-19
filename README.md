@@ -54,3 +54,14 @@ Après validation du code NEON, une activité visible au-dessus du Keyguard appe
 
 Conserve le fond animé, le balayage, la roulette avec confirmation automatique après 450 ms et toutes les options de personnalisation.
 **Aucun contournement du verrouillage sécurisé natif.**
+
+## v0.7.0 — Correction de la disparition du code
+
+L'option introduite en v0.6.0 pour fermer automatiquement le Keyguard a été rendue **facultative et désactivée par défaut**, pour éviter qu'Android retourne à l'accueil sans afficher son propre code, ou qu'une transition OEM masque le cadran NEON.
+
+- Conservé : fond d'écran animé → balayage → cadran NEON avec chiffres validés automatiquement après 450 ms.
+- Le service réarme le cadran à chaque notification réelle `ACTION_SCREEN_OFF`, y compris lorsque la gestion de l'affichage permanent (AOD) ne fait pas immédiatement passer `PowerManager.isInteractive()` à false.
+- Nouvel interrupteur **Après le code NEON → Demander le déverrouillage Android immédiatement (expérimental)** : désactivé par défaut. Peut être essayé après vérification du comportement de l'appareil.
+- L'écran paramètres signale si un PIN/schéma/mot de passe sécurisé est réellement configuré sous Android.
+- Le code NEON est un contrôle **visuel** facultatif et ne remplace pas la protection d'Android. Si l'on souhaite une sécurité authentique, configurer aussi le PIN du téléphone dans les paramètres système.
+- Le bouton « Passer à Android » est conservé pour les cas où le service ou HyperOS n'affiche pas correctement le code.

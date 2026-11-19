@@ -1,6 +1,7 @@
 package com.creatix.neonlock;
 
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -72,6 +73,15 @@ public class SettingsActivity extends Activity {
             "Après le code NEON, le véritable verrouillage Android reste actif. " +
             "Désactive la deuxième option si tu préfères afficher immédiatement le cadran.",
             13,MainActivity.MUTED,false),this,9);
+        section("APRÈS LE CODE NEON");
+        toggle("Demander le déverrouillage Android immédiatement (expérimental)",
+            LockPrefs.NATIVE_UNLOCK_AFTER_NEON,
+            LockPrefs.prefs(this).getBoolean(LockPrefs.NATIVE_UNLOCK_AFTER_NEON,false));
+        MainActivity.add(content,label(
+            "Désactivé par défaut pour que le code ou l'écran Android ne disparaisse pas. " +
+            "Si activé, Android peut ouvrir directement l'accueil lorsqu'il n'exige pas de code sécurisé. " +
+            "Le code NEON reste uniquement visuel, pas un remplacement sécurisé du PIN Android.",
+            13,MainActivity.MUTED,false),this,6);
         accessibilityStatus=label("",14,MainActivity.WHITE,false);
         MainActivity.add(content,accessibilityStatus,this,9);
         Button authorize=MainActivity.button(this,"OUVRIR LES PARAMÈTRES D’ACCESSIBILITÉ",
@@ -255,7 +265,11 @@ public class SettingsActivity extends Activity {
             boolean selected=LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false);
             String access=enabled?"Service Android autorisé ✓":"Service Android non autorisé";
             String pin=MainActivity.Credentials.length(this)>0?"Code visuel disponible":"Code visuel à configurer";
-            accessibilityStatus.setText(access+"\n"+pin+"\nMode automatique : "+(selected?"activé":"désactivé"));
+            KeyguardManager km=(KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+            boolean secure=km!=null && km.isDeviceSecure();
+            accessibilityStatus.setText(access+"\n"+pin+
+                "\nMode automatique : "+(selected?"activé":"désactivé")+
+                "\nPIN/schéma/mot de passe Android : "+(secure?"configuré":"non configuré"));
             accessibilityStatus.setTextColor(enabled&&selected&&MainActivity.Credentials.length(this)>0
                 ?MainActivity.GREEN:MainActivity.MUTED);
         }

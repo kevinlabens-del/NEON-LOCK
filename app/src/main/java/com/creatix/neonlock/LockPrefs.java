@@ -17,6 +17,7 @@ public final class LockPrefs {
     public static final String DIAL_VERTICAL="dial_vertical_percent";
     public static final String AUTO_DIAL="auto_dial_on_wake";
     public static final String SWIPE_FIRST="swipe_to_show_dial";
+    public static final String NATIVE_UNLOCK_AFTER_NEON="native_unlock_after_neon";
     private LockPrefs(){}
 
     public static SharedPreferences prefs(Context context) {

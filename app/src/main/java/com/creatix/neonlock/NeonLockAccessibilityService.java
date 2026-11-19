@@ -2,6 +2,8 @@ package com.creatix.neonlock;
 
 import android.accessibilityservice.AccessibilityService;
 import android.app.KeyguardManager;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.content.Intent;
 import android.content.Context;
 import android.graphics.Color;
@@ -56,6 +58,17 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     private MainActivity.Wheel wheel;
     private final StringBuilder input = new StringBuilder();
     private boolean active=false,hiddenForWake=false,busy=false;
+    private boolean receiverRegistered=false;
+    private final BroadcastReceiver screenEvents=new BroadcastReceiver(){
+        @Override public void onReceive(Context context,Intent intent){
+            if(Intent.ACTION_SCREEN_OFF.equals(intent.getAction())){
+                // L'état PowerManager.isInteractive() ne suit pas toujours
+                // l'Always-On Display. Un vrai SCREEN_OFF doit réarmer NEON.
+                hiddenForWake=false;
+                hideOverlay();
+            }
+        }
+    };
     private int failures=0,mode=0; // 0 absent, 1 gesture handle, 2 full dial
 
     private final Runnable tick=new Runnable(){
@@ -72,6 +85,16 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         power=(PowerManager)getSystemService(Context.POWER_SERVICE);
         keyguard=(KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
         active=true;
+        hiddenForWake=false;
+        if(!receiverRegistered){
+            try {
+                IntentFilter filter=new IntentFilter(Intent.ACTION_SCREEN_OFF);
+                registerReceiver(screenEvents,filter);
+                receiverRegistered=true;
+            }catch(Exception error){
+                Log.w(TAG,"Could not register screen-off state listener",error);
+            }
+        }
         activeInstance=new WeakReference<>(this);
         handler.removeCallbacks(tick);
         handler.post(tick);
@@ -288,6 +311,15 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
     }
 
     private void finishUnlockWithAndroid(){
+        // Par défaut, ne PAS supprimer automatiquement le verrouillage Android :
+        // certains appareils passent directement à l'accueil, ce qui donne
+        // l'impression que le code PIN attendu a disparu.
+        boolean nativeRequest=LockPrefs.prefs(this)
+            .getBoolean(LockPrefs.NATIVE_UNLOCK_AFTER_NEON,false);
+        if(!nativeRequest){
+            dismissForWake();
+            return;
+        }
         // Le code NEON a été vérifié. Une simple suppression de la fenêtre
         // superposée laisse Android sur son écran verrouillé et oblige
         // à un deuxième balayage. Un Activity visible doit demander la
@@ -324,10 +356,18 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         }
     }
 
+    private void unregisterScreenReceiver(){
+        if(!receiverRegistered)return;
+        receiverRegistered=false;
+        try{unregisterReceiver(screenEvents);}
+        catch(Exception ignored){}
+    }
+
     @Override public boolean onUnbind(android.content.Intent intent){
         active=false;
         activeInstance.clear();
         handler.removeCallbacksAndMessages(null);
+        unregisterScreenReceiver();
         hideOverlay();
         return super.onUnbind(intent);
     }
@@ -336,6 +376,7 @@ public final class NeonLockAccessibilityService extends AccessibilityService {
         active=false;
         activeInstance.clear();
         handler.removeCallbacksAndMessages(null);
+        unregisterScreenReceiver();
         hideOverlay();
         super.onDestroy();
     }
