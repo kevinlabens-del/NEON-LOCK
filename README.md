@@ -1,4 +1,4 @@
-# NEON LOCK v1.2.2 — heure intégrée au disque central 3D
+# NEON LOCK v1.2.3 — heure intégrée au disque central 3D
 
 Cette édition intègre **l'image fournie par l'utilisateur** dans le dossier Android `drawable-nodpi/neon_vault_reference.jpg` et respecte son identité : **une seule molette ronde**, sans porte de coffre-fort, charnières ou décor rectangulaire.
 
@@ -21,10 +21,16 @@ Cette édition intègre **l'image fournie par l'utilisateur** dans le dossier An
 ## Sécurité et installation
 L'application demeure un **simple fond d'écran animé** : aucun PIN NEON, aucune autorisation d'accessibilité, aucune interception des gestes ni du verrouillage Android. Le verrouillage et le balayage sont gérés séparément par le téléphone.
 
-GitHub Actions assemble l'APK `NEON-LOCK-v1.2.2.apk` (signature debug). Le build ne prouve pas un fonctionnement parfait sur tous les modèles HyperOS. Si Android autorise le fond animé sur l'écran de verrouillage, activer l'option « écran d'accueil et écran verrouillé ».
+GitHub Actions assemble l'APK `NEON-LOCK-v1.2.3.apk` (signature debug). Le build ne prouve pas un fonctionnement parfait sur tous les modèles HyperOS. Si Android autorise le fond animé sur l'écran de verrouillage, activer l'option « écran d'accueil et écran verrouillé ».
 
 ## v1.2.2 — Suppression du rectangle noir central
 - Nouveau visuel `neon_vault_center_clean.jpg` : heure et indicateurs imprimés effacés de la photographie d'origine pour retrouver la surface sombre et métallisée du centre, sans rectangle ajouté par-dessus.
 - Les heures, minutes et secondes réelles sont inscrites **directement sur le disque rond central**, sous la poignée chromée.
 - Le décompte apparaît plus bas dans le disque, sous la ligne orange d'origine ; ajustement de la taille pour ne pas dépasser du cercle.
 - Les chiffres 0–6 restent toujours droits pendant la rotation et tous les réglages existants sont conservés.
+
+## v1.2.3 — HH:mm uniquement au centre
+- Le rond central affiche **uniquement heures et minutes**, sans chiffres des secondes ni décompte sous l'heure.
+- La rotation continue de la molette 0–6 traduit toujours les secondes.
+- L'option de décompte des secondes reste disponible mais s'affiche **sous la molette**, en dehors du rond central.
+- Tous les réglages existants de couleurs, éclairage, position et sens de rotation sont conservés.

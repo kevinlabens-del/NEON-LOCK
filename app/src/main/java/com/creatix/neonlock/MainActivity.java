@@ -116,7 +116,7 @@ public final class MainActivity extends Activity {
         add(content,text(this,
             "La molette 3D utilise ton visuel original : elle tourne en 60 secondes. "+
             "Les chiffres 0 à 6 tournent tout en restant droits, avec "+
-            "l'heure et les secondes inscrites directement dans le rond central, sans cadre. "+
+            "uniquement l'heure et les minutes (HH:mm) dans le rond central, sans cadre. "+
             "Le balayage et le verrouillage éventuel restent ceux d'Android ; "+
             "cette application n'y demande aucun accès.",13,MUTED,false),this,16);
         setContentView(scroll);
