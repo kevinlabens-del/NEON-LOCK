@@ -1,4 +1,12 @@
 plugins { id 'com.android.application' }
+
+// Never keep the signing key in a public GitHub repository.
+// CI reads this keystore and its password from GitHub Actions Secrets.
+def stableStore = System.getenv('NEON_SIGNING_STORE_FILE')
+def stablePass = System.getenv('NEON_SIGNING_PASSWORD')
+def stableSigning = stableStore != null && stableStore.trim() &&
+                    stablePass != null && stablePass.trim()
+
 android {
     namespace 'com.creatix.neonlock'
     compileSdk 35
@@ -6,8 +14,28 @@ android {
         applicationId 'com.creatix.neonlock'
         minSdk 28
         targetSdk 35
-        versionCode 16
-        versionName '1.2.3'
+        versionCode 17
+        versionName '1.2.4'
     }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    signingConfigs {
+        if (stableSigning) {
+            neonRelease {
+                storeFile file(stableStore)
+                storePassword stablePass
+                keyAlias 'neonlock'
+                keyPassword stablePass
+                storeType 'pkcs12'
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (stableSigning) signingConfig signingConfigs.neonRelease
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
