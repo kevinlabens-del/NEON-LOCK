@@ -239,6 +239,10 @@ final class NeonUpdates {
         }
     }
 
+    static boolean hasPending(Context context){
+        return context.getSharedPreferences(PREFS,0).getLong(ID,-1)>=0;
+    }
+
     static void checkDownloaded(Activity activity,boolean manual){
         android.content.SharedPreferences prefs=activity.getSharedPreferences(PREFS,0);
         long id=prefs.getLong(ID,-1);
