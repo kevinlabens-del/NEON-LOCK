@@ -82,7 +82,7 @@ final class VaultArt {
             BitmapFactory.Options opts=new BitmapFactory.Options();
             opts.inScaled=false;
             source=BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.neon_vault_reference,opts);
+                R.drawable.neon_vault_center_clean,opts);
         }
         if(source==null)return null;
         // The supplied artwork's natural amber/orange is preserved by default.
@@ -258,36 +258,32 @@ final class VaultArt {
         }
         p.setStyle(Paint.Style.FILL);
 
-        // The artwork has a frozen "15:56:24" painted into it.
-        // Cover only the display zone, keeping the original spindle above.
-        RectF display=new RectF(cx-r*.403f,cy-r*.055f,
-            cx+r*.403f,cy+r*.375f);
-        p.setShader(new RadialGradient(cx,cy+r*.12f,r*.51f,
-            new int[]{Color.rgb(11,23,39),Color.rgb(4,9,19),Color.rgb(1,5,12)},
-            new float[]{0f,.66f,1f},Shader.TileMode.CLAMP));
-        canvas.drawRoundRect(display,r*.065f,r*.065f,p);
-        p.setShader(null);
-        p.setStyle(Paint.Style.STROKE);
-        p.setStrokeWidth(r*.007f);
-        p.setColor(Color.rgb(74,93,119));
-        canvas.drawRoundRect(display,r*.065f,r*.065f,p);
-        p.setStyle(Paint.Style.FILL);
+        // The supplied graphic has been retouched to remove its baked-in time.
+        // Its central glass/steel face is the REAL BACKDROP; do not draw a
+        // rectangle, rounded banner, dark mask, or border behind the digits.
+        // Hours, minutes and seconds are placed directly onto the central round.
 
         // Accurate live HH:mm:ss, with the seconds on the customizable neon channel.
         String hours=String.format(Locale.getDefault(),"%02d:%02d",
             now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
         String seconds=String.format(Locale.getDefault(),":%02d",
             now.get(Calendar.SECOND));
-        float size=r*.222f;
+        float size=r*.207f;
         p.setTextSize(size);
         p.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
         float total=p.measureText(hours)+p.measureText(seconds);
+        // Keep the full live clock inside the round face for all display sizes.
+        if(total>r*.78f){
+            size*=r*.78f/total;
+            p.setTextSize(size);
+            total=p.measureText(hours)+p.measureText(seconds);
+        }
         float left=cx-total*.5f;
         p.setTextAlign(Paint.Align.LEFT);
         p.setStyle(Paint.Style.FILL);
         p.setColor(style.clockColor);
         p.setShadowLayer(size*.14f,0f,0f,Color.argb(95,210,231,255));
-        float baseline=cy+r*.177f;
+        float baseline=cy+r*.130f;
         canvas.drawText(hours,left,baseline,p);
         p.clearShadowLayer();
         p.setColor(accent);
@@ -295,24 +291,21 @@ final class VaultArt {
         canvas.drawText(seconds,left+p.measureText(hours),baseline,p);
         p.clearShadowLayer();
 
-        p.setStyle(Paint.Style.STROKE);
-        p.setStrokeWidth(r*.008f);
-        p.setColor(accent);
-        canvas.drawLine(cx-r*.21f,cy+r*.245f,
-            cx+r*.21f,cy+r*.245f,p);
+        // The orange engraved divider is already part of the 3D image.
+        // Avoid drawing a second line or an opaque display panel.
         p.setStyle(Paint.Style.FILL);
         int remaining=60-now.get(Calendar.SECOND);
         if(style.showCountdown){
             drawText(canvas,p,String.format(Locale.getDefault(),
-                "%02d SEC RESTANTES",remaining),cx,cy+r*.327f,
-                r*.083f,style.numberColor,true,false);
+                "%02d SEC RESTANTES",remaining),cx,cy+r*.307f,
+                r*.075f,style.numberColor,true,false);
         }else{
             for(int i=0;i<3;i++){
                 p.setColor(accent);
                 float barH=(i==1?.052f:.030f)*r;
                 canvas.drawRoundRect(new RectF(cx+(i-1)*r*.045f-r*.010f,
-                    cy+r*.300f-barH,cx+(i-1)*r*.045f+r*.010f,
-                    cy+r*.300f),r*.005f,r*.005f,p);
+                    cy+r*.305f-barH,cx+(i-1)*r*.045f+r*.010f,
+                    cy+r*.305f),r*.005f,r*.005f,p);
             }
         }
 
