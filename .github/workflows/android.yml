@@ -2,6 +2,8 @@ name: NEON LOCK - Android APK and secure releases
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: write
@@ -40,6 +42,7 @@ jobs:
 
       # Public repository: never commit or upload a keystore to git or release assets.
       - name: Load persistent signing key privately
+        if: github.event_name != 'pull_request'
         env:
           NEON_KEYSTORE_BASE64: ${{ secrets.NEON_KEYSTORE_BASE64 }}
           NEON_SIGNING_PASSWORD: ${{ secrets.NEON_SIGNING_PASSWORD }}
