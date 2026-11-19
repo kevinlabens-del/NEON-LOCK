@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <uses-feature android:name="android.software.live_wallpaper" android:required="false"/>
-  <application android:label="NEON LOCK" android:theme="@android:style/Theme.Material.NoActionBar"
-    android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
-    <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
-      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-    </activity>
-    <activity android:name=".UnlockBridgeActivity" android:exported="false"
-      android:screenOrientation="portrait" android:showWhenLocked="true"
-      android:excludeFromRecents="true"/>
-    <activity android:name=".SettingsActivity" android:exported="false" android:screenOrientation="portrait"/>
-    <activity android:name=".MainActivity$DialActivity" android:exported="false"
-      android:screenOrientation="portrait" android:showWhenLocked="true"/>
-    <service android:name=".NeonLockAccessibilityService"
-        android:label="NEON LOCK — cadran au réveil"
-        android:description="@string/accessibility_description"
-        android:exported="true"
-        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-        <intent-filter>
-            <action android:name="android.accessibilityservice.AccessibilityService"/>
-        </intent-filter>
-        <meta-data android:name="android.accessibilityservice"
-            android:resource="@xml/neon_accessibility_service"/>
-    </service>
-    <service android:name=".MainActivity$LiveWallpaper" android:label="NEON LOCK animé"
-      android:exported="true" android:permission="android.permission.BIND_WALLPAPER">
-      <intent-filter><action android:name="android.service.wallpaper.WallpaperService"/></intent-filter>
-      <meta-data android:name="android.service.wallpaper" android:resource="@xml/neon_wallpaper"/>
-    </service>
-  </application>
+    <uses-feature android:name="android.software.live_wallpaper" android:required="false"/>
+    <application android:label="NEON CLOCK" android:theme="@android:style/Theme.Material.NoActionBar"
+        android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
+        <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".SettingsActivity" android:exported="false"
+            android:screenOrientation="portrait"/>
+        <service android:name=".MainActivity$LiveWallpaper"
+            android:label="NEON CLOCK animé"
+            android:exported="true"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService"/>
+            </intent-filter>
+            <meta-data android:name="android.service.wallpaper"
+                android:resource="@xml/neon_wallpaper"/>
+        </service>
+    </application>
 </manifest>

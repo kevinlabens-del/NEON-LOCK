@@ -1,16 +1,9 @@
 package com.creatix.neonlock;
 
 import android.app.Activity;
-import android.app.KeyguardManager;
 import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.content.Intent;
-import android.content.ComponentName;
-import android.provider.Settings;
-import android.accessibilityservice.AccessibilityServiceInfo;
-import android.view.accessibility.AccessibilityManager;
-import android.widget.Toast;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
@@ -22,24 +15,22 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-public class SettingsActivity extends Activity {
+public final class SettingsActivity extends Activity {
     private LinearLayout content;
-    private MainActivity.Wheel preview;
-    private TextView dialPosition;
-    private TextView accessibilityStatus;
-    private final int[] palette = {
-        0xff2bffb3, 0xffffab2b, 0xffe8f1fe, 0xff34d7ff,
-        0xffff5d9e, 0xffff536b, 0xffa677ff, 0xffffe66b,
-        0xffb2c7e3, 0xff62ff4f, 0xff0099ff, 0xff131c2b
+    private MainActivity.ClockView preview;
+    private TextView positionText;
+    private final int[] palette={
+        0xff2bffb3,0xffffab2b,0xffe8f1fe,0xff34d7ff,
+        0xffff5d9e,0xffff536b,0xffa677ff,0xffffe66b,
+        0xffb2c7e3,0xff62ff4f,0xff0099ff,0xff131c2b
     };
-    private final String[] names = {
-        "Vert néon", "Orange", "Blanc", "Bleu électrique",
-        "Rose", "Rouge", "Violet", "Jaune",
-        "Bleu gris", "Vert citron", "Bleu intense", "Bleu nuit",
+    private final String[] names={
+        "Vert néon","Orange","Blanc","Bleu électrique",
+        "Rose","Rouge","Violet","Jaune",
+        "Bleu gris","Vert citron","Bleu intense","Bleu nuit",
         "Personnaliser (#RRGGBB)…"
     };
-
-    @Override public void onCreate(Bundle state) {
+    @Override public void onCreate(Bundle state){
         super.onCreate(state);
         getWindow().setStatusBarColor(MainActivity.BG);
         getWindow().setNavigationBarColor(MainActivity.BG);
@@ -50,191 +41,119 @@ public class SettingsActivity extends Activity {
         content.setPadding(MainActivity.dp(this,20),MainActivity.dp(this,24),
             MainActivity.dp(this,20),MainActivity.dp(this,28));
         scroll.addView(content);
-        MainActivity.add(content,label("PERSONNALISATION",25,MainActivity.WHITE,true),this,0);
-        MainActivity.add(content,label("Modifie ton fond animé en direct. Les réglages sont mémorisés.",13,MainActivity.MUTED,false),this,5);
+        MainActivity.add(content,label("HORLOGE NEON",26,MainActivity.WHITE,true),this,0);
+        MainActivity.add(content,label("La roue affiche 0 à 6 : chaque intervalle correspond à 10 secondes.",
+            14,MainActivity.MUTED,false),this,6);
+        preview=new MainActivity.ClockView(this,true);
+        LinearLayout.LayoutParams previewLp=new LinearLayout.LayoutParams(-1,MainActivity.dp(this,325));
+        previewLp.topMargin=MainActivity.dp(this,10);
+        content.addView(preview,previewLp);
 
-        preview=new MainActivity.Wheel(this,false);
-        preview.setWallpaperPreview(true);
-        LinearLayout.LayoutParams previewParams=new LinearLayout.LayoutParams(-1,MainActivity.dp(this,330));
-        previewParams.setMargins(0,MainActivity.dp(this,10),0,MainActivity.dp(this,2));
-        content.addView(preview,previewParams);
-
-        section("CADRAN AUTOMATIQUE — SANS ROOT");
-        MainActivity.add(content,label(
-            "Mode expérimental : le fond animé reste visible au réveil ; " +
-            "un geste ouvre le cadran NEON. Le verrouillage Android reste obligatoire.",
-            14,MainActivity.MUTED,false),this,9);
-        toggle("Activer le cadran NEON sur l'écran verrouillé",LockPrefs.AUTO_DIAL,
-            LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false));
-        toggle("Afficher d'abord le fond, puis balayer vers le haut",LockPrefs.SWIPE_FIRST,
-            LockPrefs.prefs(this).getBoolean(LockPrefs.SWIPE_FIRST,true));
-        MainActivity.add(content,label(
-            "Réveil → fond d'écran visible → glisser vers le haut ou toucher le petit bouton « Code NEON » → cadran. " +
-            "Après le code NEON, le véritable verrouillage Android reste actif. " +
-            "Désactive la deuxième option si tu préfères afficher immédiatement le cadran.",
-            13,MainActivity.MUTED,false),this,9);
-        section("APRÈS LE CODE NEON");
-        toggle("Demander le déverrouillage Android immédiatement (expérimental)",
-            LockPrefs.NATIVE_UNLOCK_AFTER_NEON,
-            LockPrefs.prefs(this).getBoolean(LockPrefs.NATIVE_UNLOCK_AFTER_NEON,false));
-        MainActivity.add(content,label(
-            "Désactivé par défaut pour que le code ou l'écran Android ne disparaisse pas. " +
-            "Si activé, Android peut ouvrir directement l'accueil lorsqu'il n'exige pas de code sécurisé. " +
-            "Le code NEON reste uniquement visuel, pas un remplacement sécurisé du PIN Android.",
-            13,MainActivity.MUTED,false),this,6);
-        accessibilityStatus=label("",14,MainActivity.WHITE,false);
-        MainActivity.add(content,accessibilityStatus,this,9);
-        Button authorize=MainActivity.button(this,"OUVRIR LES PARAMÈTRES D’ACCESSIBILITÉ",
-            MainActivity.GREEN,Color.BLACK);
-        authorize.setOnClickListener(v -> {
-            try {
-                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-            } catch (Exception error) {
-                Toast.makeText(this,"Réglages d’accessibilité indisponibles.",Toast.LENGTH_LONG).show();
-            }
-        });
-        MainActivity.add(content,authorize,this,8);
-        MainActivity.add(content,label(
-            "L'autorisation est facultative et sensible. Ce service ne lit pas le contenu " +
-            "des autres applications et ne pilote pas leurs actions. Pour arrêter le cadran : " +
-            "désactive l'interrupteur ci-dessus ou le service d'accessibilité.",
-            12,MainActivity.MUTED,false),this,8);
-
-        section("AFFICHAGE DU TEXTE");
-        toggle("Afficher « NEON LOCK »",LockPrefs.SHOW_TITLE,LockPrefs.get(this).showTitle);
-        toggle("Afficher la date",LockPrefs.SHOW_DATE,LockPrefs.get(this).showDate);
-
+        section("AFFICHAGE");
+        toggle("Afficher le titre NEON CLOCK",LockPrefs.SHOW_TITLE,
+            LockPrefs.get(this).showTitle);
+        toggle("Afficher la date",LockPrefs.SHOW_DATE,
+            LockPrefs.get(this).showDate);
         section("COULEURS");
         chooseColor("Couleur du titre",LockPrefs.TITLE_COLOR);
         chooseColor("Couleur de la date",LockPrefs.DATE_COLOR);
-        chooseColor("Couleur du cercle",LockPrefs.RING_COLOR);
-        chooseColor("Couleur des chiffres",LockPrefs.NUMBER_COLOR);
-        chooseColor("Couleur de l'horloge",LockPrefs.CLOCK_COLOR);
-
-        section("POSITION DU CADRAN");
-        dialPosition=label("",15,MainActivity.WHITE,true);
-        MainActivity.add(content,dialPosition,this,7);
-        SeekBar slider=new SeekBar(this);
-        slider.setMax(17);
-        slider.setProgress(LockPrefs.get(this).verticalPercent-58);
-        slider.setProgressTintList(ColorStateList.valueOf(MainActivity.GREEN));
-        slider.setThumbTintList(ColorStateList.valueOf(MainActivity.GREEN));
-        MainActivity.add(content,slider,this,4);
-        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+        chooseColor("Couleur de l'arc et du repère",LockPrefs.RING_COLOR);
+        chooseColor("Couleur des graduations",LockPrefs.NUMBER_COLOR);
+        chooseColor("Couleur de l'heure",LockPrefs.CLOCK_COLOR);
+        section("POSITION SUR L'ÉCRAN");
+        positionText=label("",15,MainActivity.WHITE,true);
+        MainActivity.add(content,positionText,this,6);
+        SeekBar position=new SeekBar(this);
+        position.setMax(35);
+        position.setProgress(LockPrefs.get(this).verticalPercent-40);
+        position.setProgressTintList(ColorStateList.valueOf(MainActivity.GREEN));
+        position.setThumbTintList(ColorStateList.valueOf(MainActivity.GREEN));
+        MainActivity.add(content,position,this,5);
+        position.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override public void onProgressChanged(SeekBar bar,int progress,boolean fromUser){
-                int percent=58+progress;
-                LockPrefs.prefs(SettingsActivity.this).edit().putInt(LockPrefs.DIAL_VERTICAL,percent).apply();
+                if(!fromUser)return;
+                LockPrefs.prefs(SettingsActivity.this).edit()
+                    .putInt(LockPrefs.DIAL_VERTICAL,40+progress).apply();
                 refresh();
             }
             @Override public void onStartTrackingTouch(SeekBar bar){}
             @Override public void onStopTrackingTouch(SeekBar bar){}
         });
-        MainActivity.add(content,label("Glisse vers la droite pour descendre le cercle. La position basse (69 %) évite davantage le texte natif d’Android.",13,MainActivity.MUTED,false),this,6);
-
-        Button reset=MainActivity.button(this,"RÉTABLIR LES COULEURS ET L'AFFICHAGE",MainActivity.PANEL,MainActivity.WHITE);
-        reset.setOnClickListener(v -> new AlertDialog.Builder(this)
-            .setTitle("Rétablir l'apparence ?")
-            .setMessage("Cela ne supprimera pas ton code visuel.")
+        MainActivity.add(content,label("Déplace le cadran pour éviter l'horloge intégrée d'Android sur l'écran verrouillé.",
+            13,MainActivity.MUTED,false),this,7);
+        Button reset=MainActivity.button(this,"RÉTABLIR L'APPARENCE",
+            MainActivity.PANEL,MainActivity.WHITE);
+        reset.setOnClickListener(v->new AlertDialog.Builder(this)
+            .setTitle("Réinitialiser les couleurs ?")
+            .setMessage("Le fond animé restera disponible.")
             .setNegativeButton("Annuler",null)
-            .setPositiveButton("Rétablir",(dialog,which)->{
+            .setPositiveButton("Réinitialiser",(d,w)->{
                 LockPrefs.prefs(this).edit().clear().apply();
                 recreate();
             }).show());
-        MainActivity.add(content,reset,this,18);
-
-        MainActivity.add(content,label("Ces options modifient les éléments NEON LOCK, pas l'heure ou la date du système Android. Le véritable code PIN Android reste actif.",12,MainActivity.MUTED,false),this,15);
+        MainActivity.add(content,reset,this,16);
+        MainActivity.add(content,label("Pas de code NEON ni de service d'accessibilité. "+
+            "Le déverrouillage de ton téléphone est contrôlé dans les paramètres Android.",
+            13,MainActivity.MUTED,false),this,16);
         Button done=MainActivity.button(this,"TERMINÉ",MainActivity.GREEN,Color.BLACK);
-        done.setOnClickListener(v -> finish());
+        done.setOnClickListener(v->finish());
         MainActivity.add(content,done,this,14);
-
-        refresh();
         setContentView(scroll);
+        refresh();
     }
-
     @Override protected void onResume(){
         super.onResume();
         refresh();
     }
-
-    private boolean accessibilityEnabled() {
-        // Le getId() Android est normalement sous forme abrégée (/.Service).
-        // Comparer une identité de ComponentName, pas deux formats de chaînes.
-        ComponentName target=new ComponentName(this,NeonLockAccessibilityService.class);
-        try {
-            String configured=Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-            if(configured!=null){
-                for(String raw:configured.split(":")){
-                    if(target.equals(ComponentName.unflattenFromString(raw)))return true;
-                }
-            }
-            AccessibilityManager am=(AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE);
-            if(am!=null){
-                for(AccessibilityServiceInfo info:am.getEnabledAccessibilityServiceList(
-                    AccessibilityServiceInfo.FEEDBACK_ALL_MASK)){
-                    if(target.equals(ComponentName.unflattenFromString(info.getId())))
-                        return true;
-                }
-            }
-        }catch(Exception ignored){}
-        return false;
-    }
-
-    private TextView label(String text,int size,int color,boolean bold){
-        TextView t=MainActivity.text(this,text,size,color,bold);
+    private TextView label(String s,int size,int color,boolean bold){
+        TextView t=MainActivity.text(this,s,size,color,bold);
         t.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
         return t;
     }
-    private void section(String title){
-        MainActivity.add(content,label(title,15,MainActivity.GREEN,true),this,20);
+    private void section(String s){
+        MainActivity.add(content,label(s,15,MainActivity.GREEN,true),this,18);
     }
-    private void toggle(String label,String key,boolean checked){
-        Switch sw=new Switch(this);
-        sw.setText(label);
-        sw.setTextColor(MainActivity.WHITE);
-        sw.setTextSize(16);
-        sw.setPadding(0,MainActivity.dp(this,6),0,MainActivity.dp(this,6));
-        sw.setChecked(checked);
-        sw.setOnCheckedChangeListener((b,isChecked)->{
-            LockPrefs.prefs(this).edit().putBoolean(key,isChecked).apply();
-            if(LockPrefs.AUTO_DIAL.equals(key) && isChecked &&
-                 MainActivity.Credentials.length(this)==0){
-                Toast.makeText(this,"Configure d'abord ton code visuel dans NEON LOCK.",Toast.LENGTH_LONG).show();
-            }
+    private void toggle(String title,String key,boolean initial){
+        Switch control=new Switch(this);
+        control.setText(title);
+        control.setTextColor(MainActivity.WHITE);
+        control.setTextSize(16);
+        control.setPadding(0,MainActivity.dp(this,6),0,MainActivity.dp(this,6));
+        control.setChecked(initial);
+        control.setOnCheckedChangeListener((v,checked)->{
+            LockPrefs.prefs(this).edit().putBoolean(key,checked).apply();
             refresh();
         });
-        MainActivity.add(content,sw,this,10);
+        MainActivity.add(content,control,this,7);
     }
-    private void chooseColor(String label,String key){
-        Button b=MainActivity.button(this,label,MainActivity.PANEL,MainActivity.WHITE);
-        refreshColor(b,label,key);
-        b.setOnClickListener(v->new AlertDialog.Builder(this)
-            .setTitle(label)
+    private void chooseColor(String title,String key){
+        Button button=MainActivity.button(this,title,MainActivity.PANEL,MainActivity.WHITE);
+        refreshColor(button,title,key);
+        button.setOnClickListener(v->new AlertDialog.Builder(this)
+            .setTitle(title)
             .setItems(names,(dialog,choice)->{
-                if(choice==palette.length)customColor(b,label,key);
-                else saveColor(b,label,key,palette[choice]);
+                if(choice==palette.length)customColor(button,title,key);
+                else saveColor(button,title,key,palette[choice]);
             })
-            .setNegativeButton("Annuler",null)
-            .show());
-        MainActivity.add(content,b,this,7);
+            .setNegativeButton("Annuler",null).show());
+        MainActivity.add(content,button,this,7);
     }
     private void refreshColor(Button b,String label,String key){
-        LockPrefs.Style style=LockPrefs.get(this);
-        int col;
+        LockPrefs.Style s=LockPrefs.get(this);
+        int value;
         switch(key){
-            case LockPrefs.TITLE_COLOR: col=style.titleColor;break;
-            case LockPrefs.DATE_COLOR: col=style.dateColor;break;
-            case LockPrefs.RING_COLOR: col=style.ringColor;break;
-            case LockPrefs.NUMBER_COLOR: col=style.numberColor;break;
-            case LockPrefs.CLOCK_COLOR: col=style.clockColor;break;
-            default: col=MainActivity.WHITE;
+            case LockPrefs.TITLE_COLOR:value=s.titleColor;break;
+            case LockPrefs.DATE_COLOR:value=s.dateColor;break;
+            case LockPrefs.RING_COLOR:value=s.ringColor;break;
+            case LockPrefs.NUMBER_COLOR:value=s.numberColor;break;
+            case LockPrefs.CLOCK_COLOR:value=s.clockColor;break;
+            default:value=MainActivity.WHITE;
         }
-        b.setText("●  "+label+"     "+String.format("#%06X",col&0xffffff));
-        b.setTextColor(MainActivity.WHITE);
+        b.setText("●  "+label+"    "+String.format("#%06X",value&0xffffff));
     }
-    private void saveColor(Button b,String label,String key,int value){
+    private void saveColor(Button button,String label,String key,int value){
         LockPrefs.prefs(this).edit().putInt(key,value|0xff000000).apply();
-        refreshColor(b,label,key);
+        refreshColor(button,label,key);
         refresh();
     }
     private void customColor(Button button,String label,String key){
@@ -242,53 +161,31 @@ public class SettingsActivity extends Activity {
         hex.setSingleLine(true);
         hex.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
         hex.setHint("#2BFFB3");
-        hex.setTextColor(MainActivity.WHITE);
         LinearLayout holder=new LinearLayout(this);
         holder.setPadding(MainActivity.dp(this,20),0,MainActivity.dp(this,20),0);
         holder.addView(hex);
         AlertDialog dialog=new AlertDialog.Builder(this)
             .setTitle("Couleur personnalisée")
-            .setMessage("Saisis un code hexadécimal à 6 caractères, par exemple #FF6600.")
             .setView(holder)
             .setNegativeButton("Annuler",null)
             .setPositiveButton("Valider",null)
             .create();
-        dialog.setOnShowListener(v -> dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            .setOnClickListener(w -> {
-                String s=hex.getText().toString().trim();
-                if(!s.startsWith("#"))s="#"+s;
-                if(!s.matches("#[0-9A-Fa-f]{6}")) {
-                    hex.setError("Format attendu : #RRGGBB"); return;
+        dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            .setOnClickListener(w->{
+                String input=hex.getText().toString().trim();
+                if(!input.startsWith("#"))input="#"+input;
+                if(!input.matches("#[0-9A-Fa-f]{6}")){
+                    hex.setError("Saisis 6 caractères hexadécimaux");
+                    return;
                 }
-                saveColor(button,label,key,Color.parseColor(s));
+                saveColor(button,label,key,Color.parseColor(input));
                 dialog.dismiss();
             }));
         dialog.show();
     }
     private void refresh(){
         if(preview!=null)preview.invalidate();
-        if(dialPosition!=null){
-            dialPosition.setText("Hauteur du cadran : "+LockPrefs.get(this).verticalPercent+" % de l'écran");
-        }
-        if(accessibilityStatus!=null){
-            boolean enabled=accessibilityEnabled();
-            boolean connected=NeonLockAccessibilityService.isConnected();
-            boolean selected=LockPrefs.prefs(this).getBoolean(LockPrefs.AUTO_DIAL,false);
-            String access=!enabled?"Service d'accessibilité Android désactivé":
-                connected?"Service Android connecté ✓":
-                "Service activé dans Android mais non connecté !";
-            if(enabled && !connected)
-                access+="\nDésactive puis réactive le service dans Accessibilité.";
-            if(connected && !NeonLockAccessibilityService.getLastIssue().isEmpty())
-                access+="\n"+NeonLockAccessibilityService.getLastIssue();
-            String pin=MainActivity.Credentials.length(this)>0?"Code visuel disponible":"Code visuel à configurer";
-            KeyguardManager km=(KeyguardManager)getSystemService(KEYGUARD_SERVICE);
-            boolean secure=km!=null && km.isDeviceSecure();
-            accessibilityStatus.setText(access+"\n"+pin+
-                "\nMode automatique : "+(selected?"activé":"désactivé")+
-                "\nPIN/schéma/mot de passe Android : "+(secure?"configuré":"non configuré"));
-            accessibilityStatus.setTextColor(connected&&selected&&MainActivity.Credentials.length(this)>0
-                ?MainActivity.GREEN:MainActivity.MUTED);
-        }
+        if(positionText!=null)
+            positionText.setText("Position du cadran : "+LockPrefs.get(this).verticalPercent+" %");
     }
 }
