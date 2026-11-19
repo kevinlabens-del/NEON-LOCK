@@ -261,7 +261,8 @@ public final class MainActivity extends Activity {
                         catch(Exception ignored){}
                     }
                 }
-                if(visible)timer.postDelayed(redraw,33);
+                if(visible)timer.postDelayed(redraw,
+                    ThemePrefs.batterySaver(LiveWallpaper.this)?66:33);
             }
         }
     }
