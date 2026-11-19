@@ -159,7 +159,7 @@ public final class ThemeProfiles {
             export.put("selected_theme",ThemePrefs.selected(c));
             export.put("variants",raw(c));
         }catch(Exception ignored){}
-        return export.toString(2);
+        try{return export.toString(2);}catch(Exception ignored){return export.toString();}
     }
     public static int importAll(Context c,String json) throws Exception{
         if(json==null||json.length()>200000)
