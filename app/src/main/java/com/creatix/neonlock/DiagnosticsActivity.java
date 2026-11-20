@@ -41,7 +41,7 @@ public final class DiagnosticsActivity extends Activity {
         scroll.addView(root);
 
         add(root,text("NEON LOCK • DIAGNOSTICS",23,0xfff5fbff),0);
-        add(root,text("Tests visuels des 7 thèmes, mémoire, qualité "+
+        add(root,text("Tests visuels des 12 thèmes, mémoire, qualité "+
             "de signature et mode économie.",13,0xff92a9c7),10);
         Button run=MainActivity.button(this,"▶  TESTER LES SEPT THÈMES",
             0xff36e8c7,0xff06111c);
@@ -136,7 +136,7 @@ public final class DiagnosticsActivity extends Activity {
                 data.append(ThemePrefs.name(theme)).append(" : ")
                     .append(status).append(" (").append(duration).append(" ms)\n");
             }
-            data.append("\nBILAN : ").append(pass).append("/7 thèmes rendus\n");
+            data.append("\nBILAN : ").append(pass).append("/12 thèmes rendus\n");
             data.append("Ces tests ne remplacent pas une observation sur l'écran "+
                 "de verrouillage ni une mesure de batterie réelle.");
             String output=data.toString();
