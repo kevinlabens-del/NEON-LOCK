@@ -1,64 +1,72 @@
-# NEON LOCK v1.4.0 — ULTRA 3D EDITION
+# NEON LOCK v1.4.1 — Immersive Environments
 
-Android native live wallpaper (`com.creatix.neonlock`) with 7 themes, original designs, offline settings, premium 3D imagery and signed in-app updates. **Upgrades in place from v1.3.0** using the established, permanent private signing key.
+Application Android de fonds d'écran animés avec **12 thèmes 3D**
+personnalisables dans **une seule APK signée**, sans connexion permanente.
 
-## The seven themes
+## Les douze thèmes
 
-1. Vault Original — preserves the real photo-based metal safe dial and original settings.
-2. Cyber Hologram — cobalt/cyan 3D holographic circular panels with scanning lights.
-3. Royal Gold — golden mechanical clock ring, jeweled metal highlights and moving glints.
-4. Red Reactor — red industrial power ring, pulsing coils.
-5. Steampunk — brass/copper gears and animated steam.
-6. Galaxy Pulse — violet nebula and orbiting energy/stars.
-7. Arc Reactor — independent sci-fi blue energy core design (not an official Iron Man/Marvel product).
+| # | Thème | Décor |
+|---:|---|---|
+| 1 | **Vault Original** | Molette ronde photographique acier/orange **inchangée** |
+| 2 | Cyber Hologram | Anneau HD, grands panneaux holographiques rectangulaires et balayage |
+| 3 | Royal Gold | Cadran doré, colonnes Art déco et ornements |
+| 4 | Red Reactor | Réacteur rouge, structures industrielles, tubes et grilles |
+| 5 | Steampunk | Horloge en cuivre, conduites, vapeur et turbines extérieures |
+| 6 | Galaxy Pulse | Portail violet, nébuleuses et champs d'étoiles pleine surface |
+| 7 | Arc Reactor | Réacteur bleu original, supports mécaniques et conducteurs latéraux |
+| 8 | **Neon Grid** | Terminal HUD angulaire avec grille synthwave en perspective |
+| 9 | **Frost Core** | Cristaux de glace, facettes et noyau hexagonal |
+| 10 | **Lava Core** | Coque polygonale, rivières de magma et braises |
+| 11 | **Shadow Tech** | Console furtive, ailettes rectangulaires, capteurs radar |
+| 12 | **Ocean Pulse** | Hublot elliptique, lumière aquatique, bulles et courants |
 
-For the six newer themes, a single optimized offline JPEG atlas (`neon_v140_hd_atlas.jpg`) provides photographic mechanical materials. Dynamic animations, hour text and upright digits are **rendered separately** in Android Canvas. The artwork is not an exact capture of the earlier promotional mockup.
+Les six anciens thèmes HD bénéficient désormais d'un **décor extérieur**
+qui n'est pas simplement un cercle isolé. Les thèmes 8–12 sont des scènes
+originales **Android Canvas**, avec formes et mouvements adaptés au décor.
+Ils ne sont pas des images photo-réalistes identiques aux maquettes.
 
-## All 10 enhancements included
+## Fonctions conservées
 
-| # | Enhancement | Implementation |
-|--:|---|---|
-| 1 | Photo-realistic HD theme materials | Original HD offline atlas + Canvas highlights with individual ring textures; original Vault photo unchanged |
-| 2 | Parallax/depth | Wallpaper `onOffsetsChanged`, subtle parallax for imagery and backgrounds when the launcher provides offsets |
-| 3 | Dedicated motions per theme | Cyber scanner, Gold glints, Red coil pulses, Steampunk steam wisps, Galaxy twinkles, Arc coils, Vault metal wheel |
-| 4 | Theme designer | Material (steel/titanium/brass/carbon), numeral style, central HUD treatment, colors, brightness, speed, size |
-| 5 | Entry animation | Short non-blocking 1.65-second easing and ring-light startup when the live wallpaper becomes visible |
-| 6 | Intelligent day/night style | Automatic night palette (22:00–07:00) and existing nocturnal brightness option, independent per theme |
-| 7 | Battery performance | Atlas bitmap cached once, drawing stops when hidden, 30 FPS standard, 15 FPS saver, 12 FPS when Android battery saver is active |
-| 8 | Home/lock profiles | Separate vertical positions for home vs lock **on Android 14+ when the system exposes distinct wallpaper flags**; fallback to shared position |
-| 9 | Personal creation library | Save, rename, recall, delete up to 30 named variants, JSON import/export via Android document picker |
-| 10 | Diagnostics and automated tests | In-app offline render tests for 7 themes + report; JUnit tests for geometry/time/rotation; CI validates package, assets, signer and version |
+- **Horloge HH:mm** lisible au centre, sans secondes supplémentaires.
+- Chiffres 0–6 maintenus **toujours à l'endroit**, même en rotation.
+- Galerie à 12 aperçus animés et application immédiate du thème choisi.
+- Personnalisation indépendante des couleurs, matériaux, chiffres, noyau,
+  intensité, taille, position et vitesse.
+- Profils locaux enregistrés, import et export JSON des créations.
+- Cycle automatique des 12 thèmes (facultatif), ambiances jour/nuit,
+  animations d'activation et parallaxe lorsque le lanceur fournit les offsets.
+- Gestion de l'autonomie : pause quand le fond est invisible, mode 15 FPS et
+  adaptation à l'économiseur de batterie Android.
+- Position accueil / verrouillage distincte lorsque le constructeur expose
+  deux moteurs Android compatibles (sinon position commune).
+- Diagnostics locaux et tests Gradle, sans collecte d'identifiants.
+- Vérification des futures versions via GitHub, téléchargement avec
+  validation SHA-256/certificat et confirmation par l'installateur Android.
+- Aucun code PIN personnalisé, aucune surveillance, aucun AccessibilityService.
 
-## User controls
+## Mise à jour depuis v1.4.0
 
-- **Gallery**: choose a theme with a live preview, press *Activate live wallpaper* to apply it.
-- **Personalize theme**: per-theme color, brightness, size, position, rotation direction and speed.
-- **3D workshop**: advanced materials, digits, dial core, night palette, parallax, startup animation, separate lock position, saved variants and JSON backups.
-- **Diagnostics**: render smoke tests, memory/fps inspection and check whether the installed certificate matches the permanent release signer.
-- **Auto theme cycling**: optional; same settings and schedule as v1.3.0.
-- **Automatic updates**: checks official GitHub Releases, verifies SHA-256 and Android signature, downloads and asks Android to install. No silent installation or security bypass.
+`versionCode=20` · `versionName=1.4.1` ·
+`applicationId=com.creatix.neonlock`.
 
-All hour displays remain **HH:mm** (never seconds inside the central circle). 0–6 digits remain upright as the positions rotate. No fake lock screen, no PIN overlay, no AccessibilityService.
+La release est signée avec la **même clé privée permanente** que v1.4.0,
+afin de pouvoir l'installer par-dessus sans perte des profils de l'appli.
+Cette continuité est vérifiée dans le pipeline GitHub Actions en comparant
+le certificat attendu.
 
-## Build and signing
+La publication officielle est disponible sur :
+https://github.com/kevinlabens-del/NEON-LOCK/releases/tag/v1.4.1
 
-- Android Java, AGP 8.7.3 / compile SDK 35, min SDK 28, target SDK 35.
-- Version name **1.4.0**, versionCode **19**, same `applicationId`.
-- GitHub Actions tests every PR without secret access; signed Releases only on `main`.
-- Persistent private signing configured with GitHub Actions Secrets:
-  - `NEON_KEYSTORE_BASE64`
-  - `NEON_SIGNING_PASSWORD`
-- The CI release gate requires the expected signing certificate fingerprint matching the v1.2.4/v1.3.0 official APKs, and a valid package/version.
-- APK file: `NEON-LOCK-v1.4.0.apk`.
+## Développement et tests
 
-## Compatibility limitations
+Android Java 17 / Canvas · minSdk 28 · targetSdk 35 · JUnit/Gradle en CI.
+Les fonds HD préexistants réutilisent `neon_v140_hd_atlas.jpg`, et Vault
+Original garde ses images d'origine. Les scènes 8–12 sont intégrées dans
+`SceneArt.java` et ne nécessitent aucun téléchargement externe.
 
-Android wallpaper flags for distinguishing system/lock wallpapers are available starting **API 34**. Some Xiaomi/HyperOS versions may share one engine for both screens or suppress launcher offsets; the feature gracefully uses the standard position or static artwork when not supported. Parallax does not bypass launcher constraints.
+La compilation GitHub garantit une APK Android produite et signée.
+Elle ne prouve pas à elle seule les performances ni le rendu visuel sur un
+appareil Redmi/HyperOS : valider ensuite sur téléphone réel.
 
-Automatic checking and notifications are best effort under Android battery policies. The app cannot silently install unsigned or differently signed APKs. Runtime render diagnostics are lightweight smoke tests, **not a guarantee of appearance or battery runtime on every device**.
-
-## Reference
-
-- [Signing and updates](SIGNATURE-ET-MAJ.md)
-- [Android WallpaperService.Engine](https://developer.android.com/reference/android/service/wallpaper/WallpaperService.Engine)
-- [Android app signing](https://developer.android.com/studio/publish/app-signing)
+Cahier de la version : [CAHIER-DES-CHARGES-v1.4.1.md](CAHIER-DES-CHARGES-v1.4.1.md).
+Documentation des clés : [SIGNATURE-ET-MAJ.md](SIGNATURE-ET-MAJ.md).
