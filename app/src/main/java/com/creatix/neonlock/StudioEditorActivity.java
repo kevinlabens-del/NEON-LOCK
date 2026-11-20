@@ -139,6 +139,7 @@ public final class StudioEditorActivity extends Activity {
         done.setOnClickListener(v->finish());
         add(done);
         setContentView(root);
+        if(getIntent().getBooleanExtra("fullscreen",false))setImmersive(true);
     }
     private int dp(int v){return MainActivity.dp(this,v);}
     private Button button(String text){
@@ -156,7 +157,6 @@ public final class StudioEditorActivity extends Activity {
     }
     private void setImmersive(boolean enabled){
         immersive=enabled;
-        controls.getParent().getParent();
         ((View)controls.getParent().getParent()).setVisibility(
             enabled?View.GONE:View.VISIBLE);
         fullScreen.setText(enabled?"AFFICHER LES RÉGLAGES":"APERÇU PLEIN ÉCRAN");
