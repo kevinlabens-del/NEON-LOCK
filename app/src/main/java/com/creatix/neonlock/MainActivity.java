@@ -229,6 +229,9 @@ public final class MainActivity extends Activity {
             private boolean visible=false;
             private float xOffset=.5f;
             private long appearedAt=0L;
+            private int lastTheme=-1;
+            private int fromTheme=-1;
+            private long themeChangedAt=0L;
             NeonEngine(){
                 setTouchEventsEnabled(false);
                 setOffsetNotificationsEnabled(true);
@@ -280,10 +283,35 @@ public final class MainActivity extends Activity {
                         float entrance=ThemePrefs.startupEnabled(LiveWallpaper.this)?
                             ThemeMath.clamp((SystemClock.uptimeMillis()-appearedAt)/1650f,
                                 0f,1f):1f;
-                        ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
-                            LiveWallpaper.this,false,
-                            ThemePrefs.active(LiveWallpaper.this),lockOnly(),
-                            xOffset,entrance);
+                        int theme=ThemePrefs.active(LiveWallpaper.this);
+                        long now=SystemClock.uptimeMillis();
+                        if(lastTheme>=0 && lastTheme!=theme){
+                            fromTheme=lastTheme;
+                            themeChangedAt=now;
+                        }
+                        lastTheme=theme;
+                        float progress=ThemeMath.clamp(
+                            (now-themeChangedAt)/750f,0f,1f);
+                        if(StudioPrefs.transition(LiveWallpaper.this) &&
+                            fromTheme>=0 && progress<1f){
+                            // Crossfade the old and new wallpaper using one
+                            // offscreen alpha layer (only for 750 ms).
+                            ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
+                                LiveWallpaper.this,false,fromTheme,lockOnly(),
+                                xOffset,1f);
+                            int save=canvas.saveLayerAlpha(0f,0f,
+                                canvas.getWidth(),canvas.getHeight(),
+                                Math.round(progress*255f));
+                            ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
+                                LiveWallpaper.this,false,theme,lockOnly(),
+                                xOffset,entrance);
+                            canvas.restoreToCount(save);
+                        }else{
+                            fromTheme=-1;
+                            ThemeArt.draw(canvas,canvas.getWidth(),canvas.getHeight(),
+                                LiveWallpaper.this,false,theme,lockOnly(),
+                                xOffset,entrance);
+                        }
                     }
                 }catch(Exception ignored){
                     // A temporary wallpaper surface can disappear while turning off the screen.
@@ -296,8 +324,8 @@ public final class MainActivity extends Activity {
                 if(visible){
                     PowerManager power=(PowerManager)getSystemService(POWER_SERVICE);
                     boolean lowPower=power!=null && power.isPowerSaveMode();
-                    int fps=ThemePrefs.targetFps(LiveWallpaper.this,lowPower);
-                    timer.postDelayed(redraw,Math.max(33,1000/fps));
+                    int fps=StudioPrefs.fps(LiveWallpaper.this,lowPower);
+                    timer.postDelayed(redraw,Math.max(24,1000/fps));
                 }
             }
         }
