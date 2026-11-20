@@ -39,6 +39,10 @@ public final class ThemeMathTest {
     }
     @Test public void automaticThemeSelectionWraps(){
         assertEquals(0,ThemeMath.cyclingTheme(6,1,7));
+        // Existing IDs are stable, but the modulo now spans twelve themes.
+        assertEquals(0,ThemeMath.cyclingTheme(11,1,12));
+        assertEquals(7,ThemeMath.cyclingTheme(11,8,12));
+        assertEquals(9,ThemeMath.cyclingTheme(8,13,12));
         assertEquals(2,ThemeMath.cyclingTheme(6,3,7));
         assertEquals(4,ThemeMath.cyclingTheme(4,0,7));
     }
