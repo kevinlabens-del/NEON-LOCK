@@ -110,7 +110,15 @@ public final class DiagnosticsActivity extends Activity {
             data.append("Économie batterie Android : ")
                 .append(savedPower?"active":"inactive").append('\n');
             data.append("FPS cible : ")
-                .append(ThemePrefs.targetFps(this,savedPower)).append('\n');
+                .append(StudioPrefs.fps(this,savedPower)).append('\n');
+            data.append("Mode animation : ")
+                .append(StudioPrefs.MOTIONS[StudioPrefs.mode(this)]).append('\n');
+            data.append("Transitions : ")
+                .append(StudioPrefs.transition(this)?"activées":"désactivées")
+                .append('\n');
+            data.append("Décor personnel sur thème sélectionné : ")
+                .append(StudioBackdrop.exists(this,ThemePrefs.selected(this))?
+                    "oui":"non").append('\n');
             data.append("Parallaxe : ")
                 .append(ThemePrefs.parallaxEnabled(this)?"activée":"désactivée").append('\n');
             long used=(Runtime.getRuntime().totalMemory()-

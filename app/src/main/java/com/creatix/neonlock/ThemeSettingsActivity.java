@@ -108,6 +108,25 @@ public final class ThemeSettingsActivity extends Activity {
                 ThemePrefs.setBatterySaver(this,checked);
             });
 
+        section("IMMERSIVE STUDIO");
+        Button editor=MainActivity.button(this,
+            "✦  DÉPLACER, REDIMENSIONNER ET IMPORTER UN DÉCOR",
+            0xff2bd6be,0xff061a23);
+        editor.setOnClickListener(v->startActivity(
+            new Intent(this,StudioEditorActivity.class)));
+        add(editor,8);
+        Button motion=button("MODE : "+StudioPrefs.MOTIONS[StudioPrefs.mode(this)]);
+        motion.setOnClickListener(v->new AlertDialog.Builder(this)
+            .setTitle("Animations du fond d'écran")
+            .setItems(StudioPrefs.MOTIONS,(dialog,choice)->{
+                StudioPrefs.mode(this,choice);
+                motion.setText("MODE : "+StudioPrefs.MOTIONS[choice]);
+            }).show());
+        add(motion,7);
+        addToggle("Transition en fondu entre les thèmes",
+            StudioPrefs.transition(this),checked->
+                StudioPrefs.transition(this,checked));
+
         section("ATELIER ET CRÉATIONS PERSONNALISÉES");
         Button workshop=MainActivity.button(this,
             "✦  MATIÈRES, CHIFFRES, PROFILS ET PALETTES JOUR/NUIT",
@@ -151,6 +170,7 @@ public final class ThemeSettingsActivity extends Activity {
             .setNegativeButton("Annuler",null)
             .setPositiveButton("Réinitialiser",(dialog,which)->{
                 ThemePrefs.reset(theme,this);
+                StudioPrefs.reset(this,theme);
                 build();
             }).show());
         add(reset,23);

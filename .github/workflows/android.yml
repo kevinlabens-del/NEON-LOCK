@@ -33,11 +33,18 @@ jobs:
         run: |
           grep -q "COUNT=12" app/src/main/java/com/creatix/neonlock/ThemePrefs.java
           grep -q "ThemeTexture.draw" app/src/main/java/com/creatix/neonlock/ThemeArt.java
-          grep -q "versionCode 20" app/build.gradle
+          grep -q "versionCode 21" app/build.gradle
           test -s app/src/main/res/drawable-nodpi/neon_v140_hd_atlas.jpg
           test -s app/src/main/java/com/creatix/neonlock/ThemeDesignerActivity.java
           test -s app/src/main/java/com/creatix/neonlock/DiagnosticsActivity.java
           test -s app/src/main/java/com/creatix/neonlock/SceneArt.java
+          test -s app/src/main/java/com/creatix/neonlock/StudioEditorActivity.java
+          test -s app/src/main/java/com/creatix/neonlock/StudioBackdrop.java
+          test -s app/src/main/java/com/creatix/neonlock/StudioPrefs.java
+          test -s app/src/main/java/com/creatix/neonlock/StudioMath.java
+          test -s app/src/test/java/com/creatix/neonlock/StudioMathTest.java
+          grep -q 'StudioBackdrop.draw' app/src/main/java/com/creatix/neonlock/ThemeArt.java
+          grep -q 'StudioMath.fadeProgress' app/src/main/java/com/creatix/neonlock/MainActivity.java
           grep -q 'case ThemePrefs.OCEAN\|id==ThemePrefs.OCEAN' app/src/main/java/com/creatix/neonlock/SceneArt.java
           grep -q 'SceneArt.newScene' app/src/main/java/com/creatix/neonlock/ThemeArt.java
           grep -q 'ThemePrefs.COUNT+1' app/src/main/java/com/creatix/neonlock/ThemeGalleryActivity.java
@@ -91,19 +98,19 @@ jobs:
           # archive and manifest rather than grepping a source resource name.
           unzip -t app/build/outputs/apk/release/app-release.apk >/dev/null
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "package: name='com.creatix.neonlock'"
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "versionCode='20'"
-          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.4.1.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "versionCode='21'"
+          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.5.0.apk
       - name: Publish installable signed release artifact
         if: env.NEON_SIGNING_READY == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: NEON-LOCK-v1.4.1-SIGNED
-          path: NEON-LOCK-v1.4.1.apk
+          name: NEON-LOCK-v1.5.0-SIGNED
+          path: NEON-LOCK-v1.5.0.apk
           if-no-files-found: error
       - name: Create/update downloadable GitHub Release
         if: env.NEON_SIGNING_READY == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view v1.4.1 >/dev/null 2>&1 || gh release create v1.4.1 --title "NEON LOCK v1.4.1" --notes "Immersive Environments : 12 fonds animes avec cinq nouveaux themes Neon Grid, Frost Core, Lava Core, Shadow Tech et Ocean Pulse. Les six themes precedents recoivent des decors pleine surface, structures et animations exterieures non limitees au cercle. Vault Original reste inchange, les reglages, les presets, le mode economie, la parallaxe, le diagnostic et l heure HH:mm sont conserves. APK signee avec la meme cle privee que v1.4.0 et installable par-dessus."
-          gh release upload v1.4.1 NEON-LOCK-v1.4.1.apk --clobber
+          gh release view v1.5.0 >/dev/null 2>&1 || gh release create v1.5.0 --title "NEON LOCK v1.5.0" --notes "Immersive Studio : 12 decors conserves, nouvel editeur tactile drag et zoom pour cadrans et horloge, import image privee pour chaque decor sauf Vault Original, apercu grand format, quatre modes animation, horloges numerique mecanique HUD minimal, couleur et taille de l heure, transitions en fondu entre themes, presets locaux et export JSON enrichis, mode batterie intelligent, diagnostics enrichis, tests JUnit. HH:mm et chiffres droits preserves. APK signee avec la meme cle que v1.4.1 pour mise a jour sans desinstallation."
+          gh release upload v1.5.0 NEON-LOCK-v1.5.0.apk --clobber

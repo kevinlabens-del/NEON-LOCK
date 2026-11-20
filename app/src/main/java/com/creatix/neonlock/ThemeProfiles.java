@@ -16,7 +16,9 @@ public final class ThemeProfiles {
     private static final int LIMIT=30;
     private static final String[] INTEGER_FIELDS={
         "accent","night_color","glow","size","speed","vertical",
-        "lock_vertical","material","digits","center"
+        "lock_vertical","material","digits","center",
+        "studio_clock_style","studio_clock_size","studio_clock_color",
+        "studio_clock_dx","studio_clock_dy","studio_scene_dx"
     };
     private static final String[] BOOLEAN_FIELDS={
         "adaptive","reverse","night_palette"
@@ -75,6 +77,12 @@ public final class ThemeProfiles {
             data.put("adaptive",ThemePrefs.adaptive(c,index));
             data.put("reverse",ThemePrefs.reverse(c,index));
             data.put("night_palette",ThemePrefs.nightPalette(c,index));
+            data.put("studio_clock_style",StudioPrefs.clockStyle(c,index));
+            data.put("studio_clock_size",StudioPrefs.clockSize(c,index));
+            data.put("studio_clock_color",StudioPrefs.clockColor(c,index));
+            data.put("studio_clock_dx",StudioPrefs.clockDx(c,index));
+            data.put("studio_clock_dy",StudioPrefs.clockDy(c,index));
+            data.put("studio_scene_dx",StudioPrefs.sceneDx(c,index));
         }catch(Exception ignored){}
         return data;
     }
@@ -112,6 +120,11 @@ public final class ThemeProfiles {
                     int value=data.optInt(field,0);
                     if(field.equals("accent")){
                         ThemePrefs.setAccent(c,item.theme,value);
+                        continue;
+                    }
+                    if(field.startsWith("studio_")){
+                        String studioField=field.substring("studio_".length());
+                        StudioPrefs.put(c,item.theme,studioField,value);
                         continue;
                     }
                     if(field.equals("night_color"))
