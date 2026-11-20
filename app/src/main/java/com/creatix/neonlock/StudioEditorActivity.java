@@ -124,16 +124,26 @@ public final class StudioEditorActivity extends Activity {
             new Intent(this,ThemeDesignerActivity.class)));
         add(advanced);
         Button reset=button("RÉINITIALISER LA POSITION ET L'HORLOGE");
-        reset.setOnClickListener(v->new AlertDialog.Builder(this)
-            .setTitle("Réinitialiser ce thème ?")
-            .setMessage("Les autres thèmes et créations ne seront pas modifiés.")
-            .setNegativeButton("Annuler",null)
-            .setPositiveButton("Réinitialiser",(d,which)->{
-                StudioPrefs.reset(this,theme);
-                ThemePrefs.setInt(this,theme,"vertical",69);
-                ThemePrefs.setInt(this,theme,"size",100);
-                surface.invalidate();
-            }).show());
+        reset.setOnClickListener(v->{
+            boolean common=SharedLayoutPrefs.enabled(this);
+            new AlertDialog.Builder(this)
+                .setTitle(common?"Recentrer les 12 thèmes ?":"Réinitialiser ce thème ?")
+                .setMessage(common?
+                    "Le profil commun sera recentré sur tous les thèmes. "+
+                    "Les couleurs et décors ne seront pas modifiés.":
+                    "Les autres thèmes et créations ne seront pas modifiés.")
+                .setNegativeButton("Annuler",null)
+                .setPositiveButton("Réinitialiser",(d,which)->{
+                    if(common){
+                        SharedLayoutPrefs.centerForLockScreen(this);
+                    }else{
+                        StudioPrefs.reset(this,theme);
+                        ThemePrefs.setInt(this,theme,"vertical",69);
+                        ThemePrefs.setInt(this,theme,"size",100);
+                    }
+                    surface.invalidate();
+                }).show();
+        });
         add(reset);
         Button done=button("✓ ENREGISTRER ET TERMINER");
         done.setOnClickListener(v->finish());

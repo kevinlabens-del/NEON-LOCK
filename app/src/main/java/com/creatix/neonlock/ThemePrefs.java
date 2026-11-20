@@ -105,8 +105,10 @@ public final class ThemePrefs {
     /** For devices where Android exposes separate home and lock wallpaper engines (API 34+). */
     public static int verticalForScreen(Context c,int index,boolean lock){
         if(!lock)return vertical(c,index);
-        return ThemeMath.clamp(prefs(c).getInt(key(index,"lock_vertical"),
+        int raw=ThemeMath.clamp(prefs(c).getInt(key(index,"lock_vertical"),
             vertical(c,index)),35,80);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,index,"lock_vertical",raw),35,80);
     }
     public static boolean parallaxEnabled(Context c){
         return prefs(c).getBoolean("parallax",true);
@@ -128,25 +130,32 @@ public final class ThemePrefs {
             LockPrefs.prefs(c).edit().putInt(LockPrefs.RING_COLOR,color|0xff000000).apply();
     }
     public static int glow(Context c,int index){
-        return Math.max(50,Math.min(255,prefs(c).getInt(key(index,"glow"),190)));
+        int raw=prefs(c).getInt(key(index,"glow"),190);
+        return ThemeMath.clamp(SharedLayoutPrefs.read(c,index,"glow",raw),50,255);
     }
     public static int size(Context c,int index){
-        return Math.max(65,Math.min(120,prefs(c).getInt(key(index,"size"),100)));
+        int raw=prefs(c).getInt(key(index,"size"),100);
+        return ThemeMath.clamp(SharedLayoutPrefs.read(c,index,"size",raw),65,120);
     }
     public static int speed(Context c,int index){
-        return Math.max(20,Math.min(200,prefs(c).getInt(key(index,"speed"),100)));
+        int raw=prefs(c).getInt(key(index,"speed"),100);
+        return ThemeMath.clamp(SharedLayoutPrefs.read(c,index,"speed",raw),20,200);
     }
     public static int vertical(Context c,int index){
         int defaultValue=index==VAULT?LockPrefs.get(c).verticalPercent:69;
-        return Math.max(35,Math.min(80,prefs(c).getInt(key(index,"vertical"),defaultValue)));
+        int raw=prefs(c).getInt(key(index,"vertical"),defaultValue);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,index,"vertical",raw),35,80);
     }
     public static boolean adaptive(Context c,int index){
         return prefs(c).getBoolean(key(index,"adaptive"),false);
     }
     public static boolean reverse(Context c,int index){
-        return prefs(c).getBoolean(key(index,"reverse"),false);
+        boolean raw=prefs(c).getBoolean(key(index,"reverse"),false);
+        return SharedLayoutPrefs.readBoolean(c,index,"reverse",raw);
     }
     public static void setInt(Context c,int index,String field,int value){
+        SharedLayoutPrefs.onIntChanged(c,field,value);
         prefs(c).edit().putInt(key(index,field),value).apply();
         if(index==VAULT && field.equals("vertical"))
             LockPrefs.prefs(c).edit().putInt(LockPrefs.DIAL_VERTICAL,value).apply();
@@ -156,6 +165,7 @@ public final class ThemePrefs {
             LockPrefs.prefs(c).edit().putBoolean(LockPrefs.REVERSE_ROTATION,value!=0).apply();
     }
     public static void setBoolean(Context c,int index,String field,boolean value){
+        SharedLayoutPrefs.onBooleanChanged(c,field,value);
         prefs(c).edit().putBoolean(key(index,field),value).apply();
         if(index==VAULT && field.equals("reverse"))
             LockPrefs.prefs(c).edit().putBoolean(LockPrefs.REVERSE_ROTATION,value).apply();

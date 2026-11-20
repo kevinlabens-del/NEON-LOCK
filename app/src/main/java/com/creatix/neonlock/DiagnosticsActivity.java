@@ -119,6 +119,15 @@ public final class DiagnosticsActivity extends Activity {
             data.append("Décor personnel sur thème sélectionné : ")
                 .append(StudioBackdrop.exists(this,ThemePrefs.selected(this))?
                     "oui":"non").append('\n');
+            data.append("Rotation automatique : ")
+                .append(ThemePrefs.autoChange(this)?"active":"inactive").append('\n');
+            data.append("Alignement commun : ")
+                .append(SharedLayoutPrefs.enabled(this)?"activé":"désactivé").append('\n');
+            int currentTheme=ThemePrefs.active(this);
+            data.append("Position commune actuelle : ")
+                .append(ThemePrefs.vertical(this,currentTheme)).append(" %\n");
+            data.append("Taille commune actuelle : ")
+                .append(ThemePrefs.size(this,currentTheme)).append(" %\n");
             data.append("Parallaxe : ")
                 .append(ThemePrefs.parallaxEnabled(this)?"activée":"désactivée").append('\n');
             long used=(Runtime.getRuntime().totalMemory()-
