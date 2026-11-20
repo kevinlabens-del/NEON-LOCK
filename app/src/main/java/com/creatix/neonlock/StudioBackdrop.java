@@ -23,8 +23,8 @@ final class StudioBackdrop {
             4,.75f,true) {
         @Override protected boolean removeEldestEntry(Map.Entry<Integer,Bitmap> e){
             boolean remove=size()>3;
-            if(remove && e.getValue()!=null && !e.getValue().isRecycled())
-                e.getValue().recycle();
+            // Let GC reclaim bitmaps naturally: a wallpaper drawing thread
+            // may still be using this bitmap during a cache eviction.
             return remove;
         }
     };
@@ -37,8 +37,7 @@ final class StudioBackdrop {
         return file(c,theme).isFile();
     }
     static synchronized void clear(Context c,int theme){
-        Bitmap cached=CACHE.remove(theme);
-        if(cached!=null&&!cached.isRecycled())cached.recycle();
+        CACHE.remove(theme);
         file(c,theme).delete();
     }
     /** Decode a document at a bounded resolution to avoid loading huge camera photos. */
@@ -77,8 +76,7 @@ final class StudioBackdrop {
         }finally{
             bitmap.recycle();
         }
-        Bitmap old=CACHE.remove(theme);
-        if(old!=null&&!old.isRecycled())old.recycle();
+        CACHE.remove(theme);
         if(target.exists()&&!target.delete())throw new IOException("Remplacement impossible");
         if(!staging.renameTo(target))throw new IOException("Sauvegarde impossible");
     }
