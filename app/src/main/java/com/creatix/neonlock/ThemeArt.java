@@ -51,7 +51,7 @@ final class ThemeArt {
         }
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
         p.setDither(true);
-        float x=w*.5f;
+        float x=w*.5f+w*StudioPrefs.sceneDx(context,id)/100f;
         float y=h*(preview?.51f:
             ThemePrefs.verticalForScreen(context,id,lockScreen)/100f);
         float scale=ThemePrefs.size(context,id)/100f;
@@ -59,10 +59,12 @@ final class ThemeArt {
         r=Math.min(r,Math.min(y*.94f,(h-y)*.92f));
         if(r<8f)return;
         int accent=ThemePrefs.effectiveAccent(context,id);
-        float glow=ThemePrefs.glowFactor(context,id);
+        float glow=ThemePrefs.glowFactor(context,id)*
+            (StudioPrefs.mode(context)==StudioPrefs.INTENSE?1.15f:1f);
         float time=(System.currentTimeMillis()%60000L)/1000f;
         float spin=time*6f*(ThemePrefs.reverse(context,id)?-1f:1f)
-            *ThemePrefs.speed(context,id)/100f;
+            *ThemePrefs.speed(context,id)/100f*
+            StudioPrefs.animationFactor(context);
         int dark=0xff040915;
         if(id==ThemePrefs.GOLD)dark=0xff0a0807;
         if(id==ThemePrefs.STEAMPUNK)dark=0xff100b09;
@@ -104,8 +106,10 @@ final class ThemeArt {
                 }
             }
         }
-        // Always last: HH:mm only, independent of photo and moving digits.
-        drawClock(c,p,x,y,r,id,accent,glow,
+        // Imported scenery blends outside the clock mechanism, not over the digits.
+        StudioBackdrop.draw(c,context,w,h,id,x,y,r);
+        // HH:mm always remains upright and readable, independently editable.
+        drawClock(c,p,context,x,y,r,id,accent,glow,
             ThemePrefs.centerStyle(context,id));
         if(entry<1f){
             float start=360f*entry-90f;
@@ -487,8 +491,9 @@ final class ThemeArt {
         stroke(c,p,x,y,r*.21f,r*.018f,alpha(accent,.8f));
         dot(c,p,x,y,r*.055f,0xffdafbff,glow);
     }
-    private static void drawClock(Canvas c,Paint p,float x,float y,float r,
-                                  int id,int accent,float glow,int centerStyle){
+    private static void drawClock(Canvas c,Paint p,Context context,
+                                  float x,float y,float r,int id,int accent,
+                                  float glow,int centerStyle){
         if(centerStyle==1){
             stroke(c,p,x,y,r*.39f,r*.008f,
                 alpha(accent,.62f*glow));
@@ -504,17 +509,45 @@ final class ThemeArt {
         Calendar now=Calendar.getInstance();
         String hhmm=String.format(Locale.getDefault(),"%02d:%02d",
             now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
-        float size=r*.226f;
+        int fontStyle=StudioPrefs.clockStyle(context,id);
+        float clockX=x+r*StudioPrefs.clockDx(context,id)/100f;
+        float clockY=y+r*StudioPrefs.clockDy(context,id)/100f;
+        float size=r*.226f*StudioPrefs.clockSize(context,id)/100f;
         p.setShader(null);p.setStyle(Paint.Style.FILL);
-        p.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
+        p.setTypeface(Typeface.create(
+            fontStyle==1?"serif":fontStyle==2?"monospace":
+            fontStyle==3?"sans-serif-light":"sans-serif-condensed",
+            fontStyle==3?Typeface.NORMAL:Typeface.BOLD));
         p.setTextSize(size);p.setTextAlign(Paint.Align.CENTER);
         float measured=p.measureText(hhmm);
-        if(measured>r*.70f)p.setTextSize(size*(r*.70f/measured));
-        float baseline=y-(p.ascent()+p.descent())*.5f+r*.12f;
-        p.setColor(id==ThemePrefs.GOLD?0xfffff2d9:0xfff4fbff);
-        p.setShadowLayer(r*.025f,0,0,alpha(accent,.95f*glow));
-        c.drawText(hhmm,x,baseline,p);
+        if(measured>r*.81f)p.setTextSize(size*(r*.81f/measured));
+        float baseline=clockY-(p.ascent()+p.descent())*.5f+r*.12f;
+        int fallback=id==ThemePrefs.GOLD?0xfffff2d9:0xfff4fbff;
+        int color=StudioPrefs.resolvedClockColor(context,id,fallback);
+        p.setColor(color);
+        if(fontStyle!=3)
+            p.setShadowLayer(r*(fontStyle==2?.042f:.025f),0,0,
+                alpha(accent,.95f*glow));
+        c.drawText(hhmm,clockX,baseline,p);
         p.clearShadowLayer();
+        if(fontStyle==1){
+            // Fine engraved mechanical divider, no black rectangle.
+            p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(r*.006f);
+            p.setColor(alpha(accent,.56f));
+            c.drawLine(clockX-r*.19f,baseline+r*.065f,
+                clockX+r*.19f,baseline+r*.065f,p);
+            p.setStyle(Paint.Style.FILL);
+        }else if(fontStyle==2){
+            // Dedicated transparent HUD side brackets.
+            p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(r*.008f);
+            p.setColor(alpha(accent,.70f));
+            float dx=r*.37f;
+            c.drawLine(clockX-dx,baseline-r*.14f,
+                clockX-dx,baseline+r*.035f,p);
+            c.drawLine(clockX+dx,baseline-r*.14f,
+                clockX+dx,baseline+r*.035f,p);
+            p.setStyle(Paint.Style.FILL);
+        }
     }
     private static void drawEntryPulse(Canvas c,int w,int h,Context context,
                                        int id,float fraction){
