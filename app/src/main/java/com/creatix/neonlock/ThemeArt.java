@@ -55,8 +55,10 @@ final class ThemeArt {
         float y=h*(preview?.51f:
             ThemePrefs.verticalForScreen(context,id,lockScreen)/100f);
         float scale=ThemePrefs.size(context,id)/100f;
-        float r=Math.min(w*.45f,h*(preview?.405f:.255f))*scale;
-        r=Math.min(r,Math.min(y*.94f,(h-y)*.92f));
+        // Match Vault Original's reference size and screen-safe margins.
+        // Consistent normalized geometry avoids jumps during theme rotation.
+        float r=Math.min(w*.475f,h*(preview?.43f:.27f))*scale;
+        r=Math.min(r,Math.min(y*.97f,(h-y)*.96f));
         if(r<8f)return;
         int accent=ThemePrefs.effectiveAccent(context,id);
         float glow=ThemePrefs.glowFactor(context,id)*
