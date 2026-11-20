@@ -8,19 +8,25 @@ import java.util.Calendar;
 /** Local-only settings. Each visual theme owns its accent, glow, size, speed and position. */
 public final class ThemePrefs {
     public static final int VAULT=0, CYBER=1, GOLD=2, RED=3,
-        STEAMPUNK=4, GALAXY=5, ARC=6, COUNT=7;
+        STEAMPUNK=4, GALAXY=5, ARC=6, NEON_GRID=7, FROST=8,
+        LAVA=9, SHADOW=10, OCEAN=11, COUNT=12;
     public static final String[] NAMES={
         "VAULT ORIGINAL","CYBER HOLOGRAM","ROYAL GOLD","RED REACTOR",
-        "STEAMPUNK","GALAXY PULSE","ARC REACTOR"
+        "STEAMPUNK","GALAXY PULSE","ARC REACTOR",
+        "NEON GRID","FROST CORE","LAVA CORE","SHADOW TECH","OCEAN PULSE"
     };
     public static final String[] SUBTITLES={
         "Le coffre-fort original","Hologramme futuriste","Horlogerie de luxe",
         "Réacteur rouge","Engrenages et cuivre","Énergie cosmique",
-        "Cœur énergétique bleu"
+        "Cœur énergétique bleu",
+        "Terminal néon et grille perspective","Cristaux et glace fractale",
+        "Roche noire et magma","Interface furtive industrielle",
+        "Hublot et profondeurs sous-marines"
     };
     private static final int[] COLORS={
         0xffffab2b,0xff26dfff,0xffffc35b,0xffff344b,
-        0xffd99b4e,0xffb466ff,0xff57eaff
+        0xffd99b4e,0xffb466ff,0xff57eaff,
+        0xff50e9ff,0xffb0eaff,0xffff6938,0xff89ebc0,0xff4be6e0
     };
     private static final String PREFS="neon_theme_preferences";
     private ThemePrefs(){}

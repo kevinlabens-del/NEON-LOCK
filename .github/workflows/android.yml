@@ -29,14 +29,18 @@ jobs:
         run: gradle :app:assembleDebug --no-daemon --stacktrace
       - name: Run JVM regression tests
         run: gradle :app:testDebugUnitTest --no-daemon --stacktrace
-      - name: Verify seven theme assets and configuration
+      - name: Verify twelve theme assets and configuration
         run: |
-          grep -q "COUNT=7" app/src/main/java/com/creatix/neonlock/ThemePrefs.java
+          grep -q "COUNT=12" app/src/main/java/com/creatix/neonlock/ThemePrefs.java
           grep -q "ThemeTexture.draw" app/src/main/java/com/creatix/neonlock/ThemeArt.java
-          grep -q "versionCode 19" app/build.gradle
+          grep -q "versionCode 20" app/build.gradle
           test -s app/src/main/res/drawable-nodpi/neon_v140_hd_atlas.jpg
           test -s app/src/main/java/com/creatix/neonlock/ThemeDesignerActivity.java
           test -s app/src/main/java/com/creatix/neonlock/DiagnosticsActivity.java
+          test -s app/src/main/java/com/creatix/neonlock/SceneArt.java
+          grep -q 'case ThemePrefs.OCEAN\|id==ThemePrefs.OCEAN' app/src/main/java/com/creatix/neonlock/SceneArt.java
+          grep -q 'SceneArt.newScene' app/src/main/java/com/creatix/neonlock/ThemeArt.java
+          grep -q 'ThemePrefs.COUNT+1' app/src/main/java/com/creatix/neonlock/ThemeGalleryActivity.java
       - name: Verify embedded 3D artwork
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
@@ -87,19 +91,19 @@ jobs:
           # archive and manifest rather than grepping a source resource name.
           unzip -t app/build/outputs/apk/release/app-release.apk >/dev/null
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "package: name='com.creatix.neonlock'"
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "versionCode='19'"
-          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.4.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -q "versionCode='20'"
+          cp app/build/outputs/apk/release/app-release.apk NEON-LOCK-v1.4.1.apk
       - name: Publish installable signed release artifact
         if: env.NEON_SIGNING_READY == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: NEON-LOCK-v1.4.0-SIGNED
-          path: NEON-LOCK-v1.4.0.apk
+          name: NEON-LOCK-v1.4.1-SIGNED
+          path: NEON-LOCK-v1.4.1.apk
           if-no-files-found: error
       - name: Create/update downloadable GitHub Release
         if: env.NEON_SIGNING_READY == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view v1.4.0 >/dev/null 2>&1 || gh release create v1.4.0 --title "NEON LOCK v1.4.0" --notes "Ultra 3D Edition : six textures HD et fonds avec reflets, animations propres aux sept themes, parallaxe lors des balayages, animation de demarrage, editeur de materiaux et cadrans, palettes jour/nuit, adaptation FPS a la batterie, positions accueil/verrouillage suivant Android, presets nommes et import/export JSON, diagnostics hors ligne et tests automatiques. Heure HH:mm, fond original et signature de mise a jour conserves."
-          gh release upload v1.4.0 NEON-LOCK-v1.4.0.apk --clobber
+          gh release view v1.4.1 >/dev/null 2>&1 || gh release create v1.4.1 --title "NEON LOCK v1.4.1" --notes "Immersive Environments : 12 fonds animes avec cinq nouveaux themes Neon Grid, Frost Core, Lava Core, Shadow Tech et Ocean Pulse. Les six themes precedents recoivent des decors pleine surface, structures et animations exterieures non limitees au cercle. Vault Original reste inchange, les reglages, les presets, le mode economie, la parallaxe, le diagnostic et l heure HH:mm sont conserves. APK signee avec la meme cle privee que v1.4.0 et installable par-dessus."
+          gh release upload v1.4.1 NEON-LOCK-v1.4.1.apk --clobber
