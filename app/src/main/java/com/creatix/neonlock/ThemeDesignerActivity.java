@@ -141,7 +141,7 @@ public final class ThemeDesignerActivity extends Activity {
         Button importButton=button("↓  IMPORTER DES CRÉATIONS (JSON)");
         importButton.setOnClickListener(v->chooseImport());
         add(importButton,8);
-        Button diagnostics=button("◈  DIAGNOSTICS ET TEST DES 7 THÈMES");
+        Button diagnostics=button("◈  DIAGNOSTICS ET TEST DES 12 THÈMES");
         diagnostics.setOnClickListener(v->startActivity(
             new Intent(this,DiagnosticsActivity.class)));
         add(diagnostics,17);
