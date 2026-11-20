@@ -122,6 +122,12 @@ public final class ThemeDesignerActivity extends Activity {
             new Intent(this,ThemeSettingsActivity.class)));
         add(advanced,11);
 
+        section("ÉDITEUR TACTILE IMMERSIF");
+        Button studio=button("✦  DÉPLACER L'HORLOGE, PINCER LE DÉCOR, IMPORTER UNE IMAGE");
+        studio.setOnClickListener(v->startActivity(
+            new Intent(this,StudioEditorActivity.class)));
+        add(studio,9);
+
         section("MES CRÉATIONS ENREGISTRÉES");
         Button save=MainActivity.button(this,"＋  ENREGISTRER UNE VARIANTE",
             0xff41e6c7,Color.BLACK);
