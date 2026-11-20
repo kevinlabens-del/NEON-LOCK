@@ -189,7 +189,7 @@ public final class StudioEditorActivity extends Activity {
     private final class EditorView extends View {
         private boolean running;
         private float downY,downX,lastPinch;
-        private int startVertical,startDx,startClockX,startClockY,startSize;
+        private int startVertical,startDx,startClockX,startClockY;
         private final Runnable refresh=new Runnable(){
             @Override public void run(){
                 if(!running)return;
@@ -231,6 +231,7 @@ public final class StudioEditorActivity extends Activity {
             }
         }
         @Override public boolean onTouchEvent(MotionEvent e){
+            if(immersive)return true; // Full-screen preview is read-only.
             switch(e.getActionMasked()){
                 case MotionEvent.ACTION_DOWN:
                     downX=e.getX();downY=e.getY();
@@ -238,7 +239,6 @@ public final class StudioEditorActivity extends Activity {
                     startDx=StudioPrefs.sceneDx(StudioEditorActivity.this,theme);
                     startClockX=StudioPrefs.clockDx(StudioEditorActivity.this,theme);
                     startClockY=StudioPrefs.clockDy(StudioEditorActivity.this,theme);
-                    startSize=ThemePrefs.size(StudioEditorActivity.this,theme);
                     return true;
                 case MotionEvent.ACTION_POINTER_DOWN:
                     if(e.getPointerCount()>1)
