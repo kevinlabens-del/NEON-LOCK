@@ -22,7 +22,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import java.util.ArrayList;
 
-/** Launch screen: seven live-previews and a direct one-touch theme picker. */
+/** Launch screen: twelve live-previews and a direct one-touch theme picker. */
 public final class ThemeGalleryActivity extends Activity {
     private LinearLayout gallery;
     private TextView activeTitle;
@@ -46,7 +46,7 @@ public final class ThemeGalleryActivity extends Activity {
         TextView title=label("NEON LOCK",32,0xffedf6ff,true);
         title.setLetterSpacing(.07f);
         add(content,title,9);
-        TextView edition=label("7 THÈMES  •  ULTRA 3D EDITION",14,0xff92b8d5,true);
+        TextView edition=label("12 THÈMES  •  IMMERSIVE EDITION",14,0xff92b8d5,true);
         add(content,edition,2);
         activeTitle=label("",13,0xffc3d7e8,false);
         add(content,activeTitle,13);
@@ -131,7 +131,7 @@ public final class ThemeGalleryActivity extends Activity {
         int selected=ThemePrefs.selected(this),active=ThemePrefs.active(this);
         activeTitle.setText("THÈME ACTIF  •  "+ThemePrefs.name(active)+
             (ThemePrefs.autoChange(this)?"   ↻ AUTO":""));
-        for(int row=0;row<4;row++){
+        for(int row=0;row<(ThemePrefs.COUNT+1)/2;row++){
             LinearLayout pair=new LinearLayout(this);
             pair.setOrientation(LinearLayout.HORIZONTAL);
             LinearLayout.LayoutParams rowLp=new LinearLayout.LayoutParams(-1,-2);
@@ -197,7 +197,7 @@ public final class ThemeGalleryActivity extends Activity {
         NeonUpdates.check(this,false);
     }
 
-    /** Preview refreshes at 10 fps to minimize CPU load while scrolling cards. */
+    /** Preview refreshes at up to 8 fps to minimize CPU load while scrolling cards. */
     static final class ThemePreview extends View{
         private final int theme;
         private boolean attached;
