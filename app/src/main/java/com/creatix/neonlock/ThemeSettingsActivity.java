@@ -135,10 +135,37 @@ public final class ThemeSettingsActivity extends Activity {
             new Intent(this,ThemeDesignerActivity.class)));
         add(workshop,8);
 
+        section("ALIGNEMENT IDENTIQUE POUR LES 12 THÈMES");
+        addToggle("Même position, taille, heure et vitesse sur tous les thèmes",
+            SharedLayoutPrefs.enabled(this),checked->{
+                SharedLayoutPrefs.setEnabled(this,checked);
+                build();
+            });
+        add(label("Recommandé lorsque les thèmes changent chaque heure. "+
+            "Le décor et la couleur de chaque thème restent personnels.",12,
+            0xffa6bfd2,false),5);
+
+        Button copyLayout=button("COPIER LES RÉGLAGES DU THÈME SÉLECTIONNÉ");
+        copyLayout.setOnClickListener(v->{
+            SharedLayoutPrefs.setEnabled(this,true);
+            SharedLayoutPrefs.copyFromTheme(this,theme);
+            build();
+        });
+        add(copyLayout,7);
+        Button center=button("RECENTRER TOUS LES THÈMES (62 % DE LA HAUTEUR)");
+        center.setOnClickListener(v->{
+            SharedLayoutPrefs.centerForLockScreen(this);
+            build();
+        });
+        add(center,8);
+
         section("CHANGEMENT AUTOMATIQUE DES THÈMES");
         addToggle("Changer de thème automatiquement",
             ThemePrefs.autoChange(this),checked->{
                 ThemePrefs.setAutoChange(this,checked);
+                // The common layout becomes the default whenever auto-cycling
+                // is newly enabled, unless the user turned it off explicitly.
+                build();
             });
         Button interval=button("PÉRIODE : toutes les "+
             ThemePrefs.intervalHours(this)+" heure(s)");
