@@ -19,6 +19,8 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".ThemeSettingsActivity" android:exported="false"
             android:screenOrientation="portrait"/>
+        <activity android:name=".StudioEditorActivity" android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity android:name=".ThemeDesignerActivity" android:exported="false"
             android:screenOrientation="portrait"/>
         <activity android:name=".DiagnosticsActivity" android:exported="false"
@@ -31,7 +33,7 @@
             android:authorities="com.creatix.neonlock.updates"
             android:exported="false" android:grantUriPermissions="true"/>
         <service android:name=".MainActivity$LiveWallpaper"
-            android:label="NEON LOCK • 12 thèmes immersifs"
+            android:label="NEON LOCK • Immersive Studio"
             android:exported="true"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
