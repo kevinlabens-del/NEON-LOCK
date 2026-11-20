@@ -166,7 +166,7 @@ final class VaultArt {
             return;
         }
         final float w=width,h=height;
-        final float cx=w*.5f;
+        final float cx=w*.5f+w*StudioPrefs.sceneDx(context,ThemePrefs.VAULT)/100f;
         final float cy=h*(preview?.51f:ThemeMath.clamp(verticalFraction,.35f,.80f));
         float r=Math.min(w*.475f,h*(preview?.43f:.27f))*
             ThemePrefs.size(context,ThemePrefs.VAULT)/100f;
@@ -175,7 +175,8 @@ final class VaultArt {
         Paint p=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
         p.setDither(true);
         final int accent=selectedAccent;
-        int currentGlow=ThemePrefs.prefs(context).contains("t0_glow")?
+        int currentGlow=(SharedLayoutPrefs.enabled(context) ||
+            ThemePrefs.prefs(context).contains("t0_glow"))?
             ThemePrefs.glow(context,ThemePrefs.VAULT):style.neonIntensity;
         if(ThemePrefs.adaptive(context,ThemePrefs.VAULT) &&
            ThemeMath.isNight(Calendar.getInstance().get(Calendar.HOUR_OF_DAY)))
@@ -225,7 +226,8 @@ final class VaultArt {
         Calendar now=Calendar.getInstance();
         float elapsed=now.get(Calendar.SECOND)
             +now.get(Calendar.MILLISECOND)/1000f;
-        boolean reversed=ThemePrefs.prefs(context).contains("t0_reverse")?
+        boolean reversed=(SharedLayoutPrefs.enabled(context) ||
+            ThemePrefs.prefs(context).contains("t0_reverse"))?
             ThemePrefs.reverse(context,ThemePrefs.VAULT):style.reverseRotation;
         float wheelAngle=360f/7f+(reversed?-1f:1f)*elapsed*6f*
             ThemePrefs.speed(context,ThemePrefs.VAULT)/100f;
@@ -316,8 +318,12 @@ final class VaultArt {
         // Seconds remain available as wheel motion, not as central text.
         String time=String.format(Locale.getDefault(),"%02d:%02d",
             now.get(Calendar.HOUR_OF_DAY),now.get(Calendar.MINUTE));
-        float size=r*.276f;
-        p.setTypeface(Typeface.create("sans-serif-condensed",Typeface.BOLD));
+        int clockMode=StudioPrefs.clockStyle(context,ThemePrefs.VAULT);
+        float size=r*.276f*StudioPrefs.clockSize(context,ThemePrefs.VAULT)/100f;
+        p.setTypeface(Typeface.create(clockMode==1?"serif":
+            clockMode==2?"monospace":
+            clockMode==3?"sans-serif-light":"sans-serif-condensed",
+            clockMode==3?Typeface.NORMAL:Typeface.BOLD));
         p.setTextSize(size);
         float textWidth=p.measureText(time);
         if(textWidth>r*.70f){
@@ -327,9 +333,12 @@ final class VaultArt {
         p.setTextAlign(Paint.Align.CENTER);
         p.setStyle(Paint.Style.FILL);
         p.setShader(null);
-        p.setColor(style.clockColor);
+        p.setColor(StudioPrefs.resolvedClockColor(
+            context,ThemePrefs.VAULT,style.clockColor));
         p.setShadowLayer(size*.14f,0f,0f,Color.argb(95,210,231,255));
-        canvas.drawText(time,cx,cy+r*.17f,p);
+        canvas.drawText(time,
+            cx+r*StudioPrefs.clockDx(context,ThemePrefs.VAULT)/100f,
+            cy+r*(.17f+StudioPrefs.clockDy(context,ThemePrefs.VAULT)/100f),p);
         p.clearShadowLayer();
 
         // Retain the optional countdown setting, but NEVER show seconds
