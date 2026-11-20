@@ -16,22 +16,27 @@ public final class StudioPrefs {
     private StudioPrefs(){}
     private static String k(int theme,String item){return "studio_"+ThemePrefs.safe(theme)+"_"+item;}
     public static int clockStyle(Context c,int t){
-        return ThemeMath.clamp(ThemePrefs.prefs(c).getInt(k(t,"clock_style"),0),0,3);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,t,"clock_style",ThemePrefs.prefs(c).getInt(k(t,"clock_style"),0)),0,3);
     }
     public static int clockSize(Context c,int t){
-        return ThemeMath.clamp(ThemePrefs.prefs(c).getInt(k(t,"clock_size"),100),65,155);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,t,"clock_size",ThemePrefs.prefs(c).getInt(k(t,"clock_size"),100)),65,155);
     }
     public static int clockColor(Context c,int t){
-        return ThemePrefs.prefs(c).getInt(k(t,"clock_color"),0);
+        return SharedLayoutPrefs.read(c,t,"clock_color",ThemePrefs.prefs(c).getInt(k(t,"clock_color"),0));
     }
     public static int clockDx(Context c,int t){
-        return ThemeMath.clamp(ThemePrefs.prefs(c).getInt(k(t,"clock_dx"),0),-65,65);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,t,"clock_dx",ThemePrefs.prefs(c).getInt(k(t,"clock_dx"),0)),-65,65);
     }
     public static int clockDy(Context c,int t){
-        return ThemeMath.clamp(ThemePrefs.prefs(c).getInt(k(t,"clock_dy"),0),-65,65);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,t,"clock_dy",ThemePrefs.prefs(c).getInt(k(t,"clock_dy"),0)),-65,65);
     }
     public static int sceneDx(Context c,int t){
-        return ThemeMath.clamp(ThemePrefs.prefs(c).getInt(k(t,"scene_dx"),0),-24,24);
+        return ThemeMath.clamp(
+            SharedLayoutPrefs.read(c,t,"scene_dx",ThemePrefs.prefs(c).getInt(k(t,"scene_dx"),0)),-24,24);
     }
     public static int mode(Context c){
         return ThemeMath.clamp(ThemePrefs.prefs(c).getInt("studio_motion_mode",NORMAL),0,3);
@@ -58,6 +63,7 @@ public final class StudioPrefs {
             value=ThemeMath.clamp(value,-65,65);
         if(item.equals("scene_dx"))value=ThemeMath.clamp(value,-24,24);
         if(item.equals("clock_style"))value=ThemeMath.clamp(value,0,3);
+        SharedLayoutPrefs.onIntChanged(c,item,value);
         e.putInt(k(theme,item),value).apply();
     }
     public static void reset(Context c,int theme){
