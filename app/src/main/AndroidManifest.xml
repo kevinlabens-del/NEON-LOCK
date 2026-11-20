@@ -31,7 +31,7 @@
             android:authorities="com.creatix.neonlock.updates"
             android:exported="false" android:grantUriPermissions="true"/>
         <service android:name=".MainActivity$LiveWallpaper"
-            android:label="NEON LOCK • 7 thèmes 3D"
+            android:label="NEON LOCK • 12 thèmes immersifs"
             android:exported="true"
             android:permission="android.permission.BIND_WALLPAPER">
             <intent-filter>
