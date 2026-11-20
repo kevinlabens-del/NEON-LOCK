@@ -290,8 +290,8 @@ public final class MainActivity extends Activity {
                             themeChangedAt=now;
                         }
                         lastTheme=theme;
-                        float progress=ThemeMath.clamp(
-                            (now-themeChangedAt)/750f,0f,1f);
+                        float progress=StudioMath.fadeProgress(
+                            now,themeChangedAt,750L);
                         if(StudioPrefs.transition(LiveWallpaper.this) &&
                             fromTheme>=0 && progress<1f){
                             // Crossfade the old and new wallpaper using one
