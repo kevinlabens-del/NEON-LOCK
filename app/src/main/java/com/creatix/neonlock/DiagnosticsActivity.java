@@ -43,7 +43,7 @@ public final class DiagnosticsActivity extends Activity {
         add(root,text("NEON LOCK • DIAGNOSTICS",23,0xfff5fbff),0);
         add(root,text("Tests visuels des 12 thèmes, mémoire, qualité "+
             "de signature et mode économie.",13,0xff92a9c7),10);
-        Button run=MainActivity.button(this,"▶  TESTER LES SEPT THÈMES",
+        Button run=MainActivity.button(this,"▶  TESTER LES 12 THÈMES",
             0xff36e8c7,0xff06111c);
         run.setOnClickListener(v->runTests());
         add(root,run,18);
