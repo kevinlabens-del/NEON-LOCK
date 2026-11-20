@@ -24,7 +24,9 @@ public final class SharedLayoutPrefs {
         SharedPreferences prefs=ThemePrefs.prefs(c);
         // Automatic cycling previously showed per-theme offsets. Enable
         // the common layout by default for existing cycling installations.
-        return prefs.getBoolean(ENABLED,ThemePrefs.autoChange(c));
+        return SharedLayoutMath.shouldShare(
+            prefs.contains(ENABLED),prefs.getBoolean(ENABLED,false),
+            ThemePrefs.autoChange(c));
     }
     private static String perTheme(int theme,String field){
         return field.startsWith("clock_")||field.equals("scene_dx")?
