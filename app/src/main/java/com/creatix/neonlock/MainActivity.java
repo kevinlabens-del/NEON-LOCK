@@ -111,7 +111,7 @@ public final class MainActivity extends Activity {
         TextView title=text(this,"NEON LOCK",32,WHITE,true);
         title.setLetterSpacing(.09f);
         add(content,title,this,12);
-        add(content,text(this,"7 THÈMES 3D  •  ÉDITION PREMIUM",15,MUTED,false),this,8);
+        add(content,text(this,"12 THÈMES 3D  •  ÉDITION PREMIUM",15,MUTED,false),this,8);
         preview=new ClockView(this,true);
         LinearLayout.LayoutParams frame=new LinearLayout.LayoutParams(-1,dp(this,340));
         frame.topMargin=dp(this,12);
@@ -120,7 +120,7 @@ public final class MainActivity extends Activity {
         Button wallpaper=button(this,"◉  ACTIVER LE FOND D'ÉCRAN ANIMÉ",GREEN,Color.BLACK);
         wallpaper.setOnClickListener(v->chooseWallpaper());
         add(content,wallpaper,this,12);
-        Button galleryButton=button(this,"▦  GALERIE DES 7 THÈMES",PANEL,WHITE);
+        Button galleryButton=button(this,"▦  GALERIE DES 12 THÈMES",PANEL,WHITE);
         galleryButton.setOnClickListener(v->startActivity(new Intent(this,ThemeGalleryActivity.class)));
         add(content,galleryButton,this,8);
         Button customize=button(this,"⚙  PERSONNALISER MON THÈME",PANEL,WHITE);
@@ -141,8 +141,8 @@ public final class MainActivity extends Activity {
             add(content,notifications,this,8);
         }
         add(content,text(this,
-            "Choisis parmi 7 cadrans 3D : Vault Original, Cyber, Royal Gold, "+
-            "Red Reactor, Steampunk, Galaxy Pulse et Arc Reactor. "+
+            "Choisis parmi 12 ambiances 3D : Vault Original, Cyber, Royal Gold, "+
+            "Red Reactor, Steampunk, Galaxy Pulse, Arc Reactor, Neon Grid, Frost Core, Lava Core, Shadow Tech et Ocean Pulse. "+
             "L'heure reste au format HH:mm et tes réglages sont sauvegardés. "+
             "NEON LOCK vérifie automatiquement les nouvelles versions officielles. "+
             "Si une mise à jour existe, tu peux la télécharger puis confirmer "+
