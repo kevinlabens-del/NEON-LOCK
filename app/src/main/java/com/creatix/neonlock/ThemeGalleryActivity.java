@@ -46,7 +46,7 @@ public final class ThemeGalleryActivity extends Activity {
         TextView title=label("NEON LOCK",32,0xffedf6ff,true);
         title.setLetterSpacing(.07f);
         add(content,title,9);
-        TextView edition=label("12 THÈMES  •  IMMERSIVE EDITION",14,0xff92b8d5,true);
+        TextView edition=label("12 THÈMES  •  IMMERSIVE STUDIO",14,0xff92b8d5,true);
         add(content,edition,2);
         activeTitle=label("",13,0xffc3d7e8,false);
         add(content,activeTitle,13);
@@ -60,6 +60,21 @@ public final class ThemeGalleryActivity extends Activity {
             0xff41e7c7,Color.BLACK);
         apply.setOnClickListener(v->activateWallpaper());
         add(content,apply,14);
+
+        Button studio=MainActivity.button(this,"✦  IMMERSIVE STUDIO — ÉDITEUR TACTILE",
+            0xff30e4c8,0xff03151e);
+        studio.setOnClickListener(v->startActivity(
+            new Intent(this,StudioEditorActivity.class)));
+        add(content,studio,12);
+
+        Button preview=MainActivity.button(this,"▣  PRÉVISUALISER PLEIN ÉCRAN",
+            0xff1d3045,0xfff1fbff);
+        preview.setOnClickListener(v->{
+            Intent intent=new Intent(this,StudioEditorActivity.class);
+            intent.putExtra("fullscreen",true);
+            startActivity(intent);
+        });
+        add(content,preview,8);
 
         Button personalize=MainActivity.button(this,"⚙  PERSONNALISER LE THÈME",
             0xff18263a,0xfff5fbff);
