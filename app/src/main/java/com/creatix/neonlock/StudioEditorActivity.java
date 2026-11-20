@@ -49,7 +49,7 @@ public final class StudioEditorActivity extends Activity {
         back.setOnClickListener(v->finish());
         header.addView(back,new LinearLayout.LayoutParams(0,-2,1));
         fullScreen=button("APERÇU PLEIN ÉCRAN");
-        fullScreen.setOnClickListener(v->setImmersive(!immersive));
+        fullScreen.setOnClickListener(v->setExpandedPreview(!immersive));
         header.addView(fullScreen,new LinearLayout.LayoutParams(0,-2,2));
         root.addView(header);
         surface=new EditorView(this);
@@ -139,7 +139,7 @@ public final class StudioEditorActivity extends Activity {
         done.setOnClickListener(v->finish());
         add(done);
         setContentView(root);
-        if(getIntent().getBooleanExtra("fullscreen",false))setImmersive(true);
+        if(getIntent().getBooleanExtra("fullscreen",false))setExpandedPreview(true);
     }
     private int dp(int v){return MainActivity.dp(this,v);}
     private Button button(String text){
@@ -155,7 +155,7 @@ public final class StudioEditorActivity extends Activity {
         params.topMargin=dp(6);
         controls.addView(v,params);
     }
-    private void setImmersive(boolean enabled){
+    private void setExpandedPreview(boolean enabled){
         immersive=enabled;
         // Hide only the settings ScrollView; the preview remains visible.
         ((View)controls.getParent()).setVisibility(
