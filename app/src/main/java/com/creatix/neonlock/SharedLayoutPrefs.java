@@ -42,8 +42,10 @@ public final class SharedLayoutPrefs {
                 return defaultValue(c,theme,"vertical");
             case "size":return 100;
             case "speed":return 100;
-            case "glow":return 190;
-            case "reverse":return 0;
+            case "glow":return theme==ThemePrefs.VAULT?
+                LockPrefs.get(c).neonIntensity:190;
+            case "reverse":return theme==ThemePrefs.VAULT &&
+                LockPrefs.get(c).reverseRotation?1:0;
             case "clock_size":return 100;
             default:return 0;
         }
@@ -56,7 +58,8 @@ public final class SharedLayoutPrefs {
         for(String field:FIELDS){
             int value;
             if(field.equals("reverse")){
-                value=p.getBoolean(perTheme(theme,field),false)?1:0;
+                value=p.getBoolean(perTheme(theme,field),
+                    defaultValue(c,theme,field)!=0)?1:0;
             }else{
                 String key=perTheme(theme,field);
                 if(field.equals("lock_vertical")&&!p.contains(key)){
