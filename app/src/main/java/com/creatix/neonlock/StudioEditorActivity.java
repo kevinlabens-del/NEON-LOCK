@@ -157,7 +157,8 @@ public final class StudioEditorActivity extends Activity {
     }
     private void setImmersive(boolean enabled){
         immersive=enabled;
-        ((View)controls.getParent().getParent()).setVisibility(
+        // Hide only the settings ScrollView; the preview remains visible.
+        ((View)controls.getParent()).setVisibility(
             enabled?View.GONE:View.VISIBLE);
         fullScreen.setText(enabled?"AFFICHER LES RÉGLAGES":"APERÇU PLEIN ÉCRAN");
         surface.invalidate();
