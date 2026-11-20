@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Seven original, resolution-independent animated 3D clock scenes.
+ * Twelve original, resolution-independent animated 3D wallpaper scenes.
  * The first scene delegates to the original photo-based Vault renderer.
  * Other themes are procedural drawings; no remote artwork or internet needed.
  */
@@ -69,23 +69,39 @@ final class ThemeArt {
         if(id==ThemePrefs.RED)dark=0xff09040b;
         if(id==ThemePrefs.GALAXY)dark=0xff0b061a;
         if(id==ThemePrefs.ARC)dark=0xff050c18;
+        if(id==ThemePrefs.NEON_GRID)dark=0xff081025;
+        if(id==ThemePrefs.FROST)dark=0xff0c223b;
+        if(id==ThemePrefs.LAVA)dark=0xff240908;
+        if(id==ThemePrefs.SHADOW)dark=0xff070d12;
+        if(id==ThemePrefs.OCEAN)dark=0xff041d2b;
 
         drawBackground(c,p,w,h,x,y,r,dark,accent,glow,id,xOffset);
+        float tick=System.currentTimeMillis()/1000f;
+        if(id>=ThemePrefs.CYBER && id<=ThemePrefs.ARC)
+            SceneArt.scenery(c,p,w,h,x,y,r,id,accent,glow,tick,
+                ThemePrefs.parallaxEnabled(context)?xOffset:.5f);
         c.save();
         if(entry<1f)c.scale(.925f+.075f*entry,.925f+.075f*entry,x,y);
-        // New photorealistic materials. Procedural fallback remains if decode fails.
-        boolean textured=ThemeTexture.draw(c,p,context,x,y,r,id,
-            accent,spin,glow,ThemePrefs.parallaxEnabled(context)?xOffset:.5f,
-            System.currentTimeMillis()/1000f);
-        if(!textured){
-            switch(id){
-                case ThemePrefs.CYBER: cyber(c,p,x,y,r,accent,spin,glow);break;
-                case ThemePrefs.GOLD: gold(c,p,x,y,r,accent,spin,glow);break;
-                case ThemePrefs.RED: red(c,p,x,y,r,accent,spin,glow);break;
-                case ThemePrefs.STEAMPUNK: steampunk(c,p,x,y,r,accent,spin,glow);break;
-                case ThemePrefs.GALAXY: galaxy(c,p,x,y,r,accent,spin,glow);break;
-                case ThemePrefs.ARC: arcReactor(c,p,x,y,r,accent,spin,glow);break;
-                default:cyber(c,p,x,y,r,accent,spin,glow);
+        // The original six skins retain their high-definition metal atlas;
+        // five new ones use full-screen compositions, not compulsory round dials.
+        if(id>=ThemePrefs.NEON_GRID){
+            SceneArt.newScene(c,p,w,h,x,y,r,id,accent,glow,
+                spin,tick,ThemePrefs.parallaxEnabled(context)?xOffset:.5f,
+                ThemePrefs.digitStyle(context,id));
+        }else{
+            boolean textured=ThemeTexture.draw(c,p,context,x,y,r,id,
+                accent,spin,glow,ThemePrefs.parallaxEnabled(context)?xOffset:.5f,
+                tick);
+            if(!textured){
+                switch(id){
+                    case ThemePrefs.CYBER: cyber(c,p,x,y,r,accent,spin,glow);break;
+                    case ThemePrefs.GOLD: gold(c,p,x,y,r,accent,spin,glow);break;
+                    case ThemePrefs.RED: red(c,p,x,y,r,accent,spin,glow);break;
+                    case ThemePrefs.STEAMPUNK: steampunk(c,p,x,y,r,accent,spin,glow);break;
+                    case ThemePrefs.GALAXY: galaxy(c,p,x,y,r,accent,spin,glow);break;
+                    case ThemePrefs.ARC: arcReactor(c,p,x,y,r,accent,spin,glow);break;
+                    default:cyber(c,p,x,y,r,accent,spin,glow);
+                }
             }
         }
         // Always last: HH:mm only, independent of photo and moving digits.
