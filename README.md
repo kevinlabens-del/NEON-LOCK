@@ -1,3 +1,43 @@
+# NEON LOCK v1.5.1 — Alignement commun des 12 thèmes
+
+**Correction de la rotation automatique :** quand les thèmes changent toutes les
+heures (ou selon une autre durée), ils gardent une disposition commune :
+position du cadran sur l'écran d'accueil et de verrouillage, taille, vitesse,
+intensité, sens de rotation, position et présentation de l'horloge HH:mm.
+Les couleurs, textures, décors et images personnalisées restent propres à
+chaque thème.
+
+### Comment configurer les douze thèmes d'un coup
+
+Dans **Personnaliser le thème** → **Alignement identique pour les 12 thèmes** :
+
+- Activer **Même position, taille, heure et vitesse sur tous les thèmes**.
+  Cette option est activée par défaut lorsque la rotation automatique est
+  activée (y compris sur les installations existantes).
+- Appuyer sur **Copier les réglages du thème sélectionné** pour utiliser la
+  disposition déjà personnalisée de ce thème.
+- Appuyer sur **Recentrer tous les thèmes (62 % de la hauteur)** si les cadrans
+  apparaissent trop bas et se superposent à la zone de déverrouillage.
+- Continuer à régler la taille, la position, le sens ou l'horloge dans l'éditeur
+  tactile : les changements sont alors communs à tous les thèmes.
+
+Cette correction laisse intactes les préférences individuelles déjà
+enregistrées : désactiver l'alignement commun les rend à nouveau actives.
+Le **Vault Original** conserve ses photos et sa mécanique, tout en respectant
+la nouvelle position et l'horloge commune lorsque l'option est activée.
+
+*L'heure et les widgets Android au-dessus du fond d'écran sont contrôlés par
+HyperOS/Android ; NEON LOCK peut positionner son propre cadran, mais pas
+recolorer l'horloge native du verrouillage.*
+
+**Mise à jour :** v1.5.1 (`versionCode 22`), même identifiant
+`com.creatix.neonlock` et même clé de signature officielle que v1.5.0.
+La mise à jour s'installe par-dessus et conserve les personnalisations.
+
+Lien : https://github.com/kevinlabens-del/NEON-LOCK/releases/tag/v1.5.1
+
+---
+
 # NEON LOCK v1.5.0 — IMMERSIVE STUDIO
 
 Fond d'écran animé Android natif, **12 thèmes conservés**, avec éditeur tactile
