@@ -40,20 +40,10 @@ public final class StudioPrefs {
         ThemePrefs.prefs(c).edit().putInt("studio_motion_mode",ThemeMath.clamp(v,0,3)).apply();
     }
     public static int fps(Context c,boolean powerSave){
-        if(powerSave)return 12;
-        int m=mode(c);
-        if(m==ECO)return 12;
-        if(ThemePrefs.batterySaver(c))return 15;
-        if(m==CALM)return 20;
-        return m==INTENSE?40:30;
+        return StudioMath.targetFps(mode(c),ThemePrefs.batterySaver(c),powerSave);
     }
     public static float animationFactor(Context c){
-        switch(mode(c)){
-            case CALM:return .60f;
-            case INTENSE:return 1.40f;
-            case ECO:return .38f;
-            default:return 1f;
-        }
+        return StudioMath.motionFactor(mode(c));
     }
     public static boolean transition(Context c){
         return ThemePrefs.prefs(c).getBoolean("studio_transition",true);
